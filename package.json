@@ -1,0 +1,9 @@
+{
+  "name": "byob",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Cillié Malan <cilliemalan@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+  }
+}

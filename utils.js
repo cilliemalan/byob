@@ -79,7 +79,7 @@ const sign = (wut, key) => {
         delete wut.signature;
     }
     const objecthash = hash(wut);
-    const signature = sign_hash(objecthash, key);
+    const signature = encode(sign_hash(objecthash, key));
     return { ...wut, signature };
 }
 

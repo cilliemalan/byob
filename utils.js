@@ -7,7 +7,7 @@ const secp256k1 = new elliptic.ec('secp256k1');
 
 /**
  * Turns base64 into base64url.
- * @param {string} base64 
+ * @param {string} base64 the thing to tweak
  */
 const base64url = (base64) => base64.replace(/\+|\/|=/gi, (m) => m == '+' ? '-' : m == '/' ? '_' : '');
 
@@ -19,7 +19,7 @@ const base64url = (base64) => base64.replace(/\+|\/|=/gi, (m) => m == '+' ? '-' 
 const encode = (wut, encoding) => {
     if (isArray(wut)) wut = Buffer.from(wut);
 
-    return base64url(base64);
+    return base64url(wut.toString('base64'));
 }
 
 /**

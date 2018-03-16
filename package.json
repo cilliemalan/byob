@@ -5,5 +5,7 @@
   "author": "Cillié Malan <cilliemalan@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "elliptic": "^6.4.0",
+    "object-hash": "^1.3.0"
   }
 }

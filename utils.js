@@ -5,6 +5,8 @@ const { isArray } = require('util');
 
 const secp256k1 = new elliptic.ec('secp256k1');
 
+const hash_cache = new WeakMap();
+
 /**
  * Turns base64 into base64url.
  * @param {string} base64 the thing to tweak
@@ -35,18 +37,29 @@ const decode = (encoded) => Buffer.from(encoded, 'base64');
  * @param {object} wut The thing to hash.
  * @returns {Buffer} The hash of the object.
  */
-const hash = (wut) => {
+const hash = (wut, use_cache = true) => {
     if (typeof wut != "object") {
         throw "this method only hashes objects";
     }
 
-    // strip signature
-    if (wut.signature) {
-        wut = { ...wut };
-        delete wut.signature;
+    if (use_cache) {
+        const cached = hash_cache.get(wut);
+        if (cached) return Buffer.from(cached, 'base64');
     }
 
-    const hashed = objecthash(wut, { algorithm: 'sha256', encoding: 'base64' });
+    // strip signature
+    let tohash = wut;
+    if (tohash.signature) {
+        tohash = { ...wut };
+        delete tohash.signature;
+    }
+
+    const hashed = objecthash(tohash, { algorithm: 'sha256', encoding: 'base64' });
+
+    if (use_cache) {
+        hash_cache.set(wut, hashed);
+    }
+    
     return Buffer.from(hashed, 'base64');
 }
 
@@ -152,10 +165,10 @@ const is_valid_base64 = (s) => {
  * @returns {boolean} true or false.
  */
 const is_valid_public_key = (key) => {
-    if(typeof key == "string") {
+    if (typeof key == "string") {
         return key.length == 44 && key[0] == 'A' &&
             isValidBase64(key) && isValidPublicKey(decode(key));
-    } else if(key instanceof Buffer) {
+    } else if (key instanceof Buffer) {
         return key.length == 33 && (key[0] == 2 || key[0] == 3);
     } else {
         return false;
@@ -168,10 +181,10 @@ const is_valid_public_key = (key) => {
  * @returns {boolean} true or false.
  */
 const is_valid_private_key = (key) => {
-    if(typeof key == "string") {
-        return key.length == 43 && 
-        isValidBase64(key) && isValidPrivateKey(decode(key));
-    } else if(key instanceof Buffer) {
+    if (typeof key == "string") {
+        return key.length == 43 &&
+            isValidBase64(key) && isValidPrivateKey(decode(key));
+    } else if (key instanceof Buffer) {
         return key.length == 32;
     } else {
         return false;

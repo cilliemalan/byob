@@ -121,7 +121,7 @@ const verify = (wut, pubkey) => {
  * Generates a private key
  * @returns {Buffer} The private key.
  */
-const generateKey = () => {
+const generate_key = () => {
     return secp256k1.genKeyPair().getPrivate().toBuffer();
 }
 
@@ -130,7 +130,7 @@ const generateKey = () => {
  * @param {string|Buffer} key The private key.
  * @returns {Buffer} The public key.
  */
-const getPublicKeyFromPrivateKey = (key) => {
+const get_public_key_from_private_key = (key) => {
     if (typeof key == "string") key = decode(key);
     const keypair = secp256k1.keyFromPrivate(key);
     const pub = keypair.getPublic();
@@ -142,7 +142,7 @@ const getPublicKeyFromPrivateKey = (key) => {
  * @param {*} s the string to check.
  * @returns {boolean} true or false.
  */
-const isValidBase64 = (s) => {
+const is_valid_base64 = (s) => {
     return typeof s == "string" && (s == "" || /[-a-zA-Z0-9_+/]/.test(s));
 }
 
@@ -151,7 +151,7 @@ const isValidBase64 = (s) => {
  * @param {*} s the thing to check.
  * @returns {boolean} true or false.
  */
-const isValidPublicKey = (key) => {
+const is_valid_public_key = (key) => {
     if(typeof key == "string") {
         return key.length == 44 && key[0] == 'A' &&
             isValidBase64(key) && isValidPublicKey(decode(key));
@@ -167,7 +167,7 @@ const isValidPublicKey = (key) => {
  * @param {*} s the thing to check.
  * @returns {boolean} true or false.
  */
-const isValidPrivateKey = (key) => {
+const is_valid_private_key = (key) => {
     if(typeof key == "string") {
         return key.length == 43 && 
         isValidBase64(key) && isValidPrivateKey(decode(key));
@@ -183,7 +183,7 @@ const isValidPrivateKey = (key) => {
  * @param {*} s the thing to check.
  * @returns {boolean} true or false.
  */
-const isValidHash = (hash) => isValidPrivateKey(hash);
+const is_valid_hash = (hash) => isValidPrivateKey(hash);
 
 module.exports = {
     encode,
@@ -193,11 +193,11 @@ module.exports = {
     sign,
     verify_sig,
     verify,
-    generateKey,
-    getPublicKeyFromPrivateKey,
+    generate_key,
+    get_public_key_from_private_key,
 
-    isValidBase64,
-    isValidPublicKey,
-    isValidPrivateKey,
-    isValidHash
+    is_valid_base64,
+    is_valid_public_key,
+    is_valid_private_key,
+    is_valid_hash
 };

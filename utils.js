@@ -124,7 +124,7 @@ const verify = (wut, pubkeys) => {
     }
 
     if (!wut.signature && !(wut.signatures && wut.signatures.length)) {
-        throw "wut must have a signature";
+        return false;
     }
 
     const object_hash = hash(wut);

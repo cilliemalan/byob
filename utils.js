@@ -17,7 +17,7 @@ const base64url = (base64) => base64.replace(/\+|\/|=/gi, (m) => m == '+' ? '-' 
  * @param {string|Buffer} wut The thing to encode.
  * @returns {string} an encoded representation of wut.
  */
-const encode = (wut, encoding) => {
+const encode = (wut) => {
     if (isArray(wut)) wut = Buffer.from(wut);
 
     return base64url(wut.toString('base64'));

@@ -30,6 +30,7 @@ module.exports = {
     'hash does care about null': () => bequal(hash({ a: 2, b: null }), hash({ b: null, a: 2 })),
     'hash does care about undefined': () => bequal(hash({ a: 2, b: undefined }), hash({ b: undefined, a: 2 })),
     'hash does not see null and undefined the same': () => bnotEqual(hash({ a: 2, b: undefined }), hash({ b: null, a: 2 })),
+    'hash does not see hash': () => bequal(hash({ a: 2, hash: 'abc' }), hash({ a: 2, hash: 'def' })),
     'hash does not see signature by default': () => bequal(hash({ a: 2, signature: 'abc' }), hash({ a: 2, signature: 'def' })),
     'hash does not see signatures by default': () => bequal(hash({ a: 2, signatures: ['abc'] }), hash({ a: 2, signatures: ['def'] })),
     'hash includes signature if asked': () => bnotEqual(hash({ a: 2, signature: 'abc' }, true), hash({ a: 2, signature: 'def' }, true)),

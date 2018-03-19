@@ -42,8 +42,9 @@ const hash = (wut, include_signature = false) => {
         throw "this method only hashes objects";
     }
 
-    // strip signature
+    // strip hash & signature
     let tohash = wut;
+    delete tohash.hash;
     if (!include_signature && ("signature" in tohash || "signatures" in tohash)) {
         tohash = { ...wut };
         delete tohash.signature;

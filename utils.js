@@ -2,10 +2,9 @@ const objecthash = require('object-hash');
 const { createHash } = require('crypto');
 const elliptic = require("elliptic");
 const { isArray } = require('util');
+const _ = require('lodash');
 
 const secp256k1 = new elliptic.ec('secp256k1');
-
-const hash_cache = new WeakMap();
 
 /**
  * Turns base64 into base64url.
@@ -32,34 +31,27 @@ const encode = (wut, encoding) => {
 const decode = (encoded) => Buffer.from(encoded, 'base64');
 
 /**
- * hashes an object. Will not include a prop called "signature" if
+ * hashes an object. Will by default not include a prop called "signature" if
  * it exists.
  * @param {object} wut The thing to hash.
+ * @param {boolean} include_signature Set to true to hash including any signature(s).
  * @returns {Buffer} The hash of the object.
  */
-const hash = (wut, use_cache = true) => {
+const hash = (wut, include_signature = false) => {
     if (typeof wut != "object") {
         throw "this method only hashes objects";
     }
 
-    if (use_cache) {
-        const cached = hash_cache.get(wut);
-        if (cached) return Buffer.from(cached, 'base64');
-    }
-
     // strip signature
     let tohash = wut;
-    if (tohash.signature) {
+    if (!include_signature && ("signature" in tohash || "signatures" in tohash)) {
         tohash = { ...wut };
         delete tohash.signature;
+        delete tohash.signatures;
     }
 
     const hashed = objecthash(tohash, { algorithm: 'sha256', encoding: 'base64' });
 
-    if (use_cache) {
-        hash_cache.set(wut, hashed);
-    }
-    
     return Buffer.from(hashed, 'base64');
 }
 
@@ -82,18 +74,26 @@ const sign_hash = (hash, key) => {
  * Signs an object and returns a new object with the signature
  * embedded.
  * @param {object} wut The thing to sign.
- * @param {*} key the private key to sign with.
+ * @param {string|string[]} keys the private key or keys to sign with.
  * @returns {object} a new object exactly like wut but with a signature.
  */
-const sign = (wut, key) => {
+const sign = (wut, keys) => {
+    if (!isArray(keys)) keys = [keys];
+    if (!keys.length) throw "must specify at least one key";
+
     // strip signature from wut if it exists
-    if (wut.signature) {
-        wut = { ...wut };
-        delete wut.signature;
-    }
+    wut = { ...wut };
+    delete wut.signature;
+    delete wut.signatures;
+
+
     const objecthash = hash(wut);
-    const signature = encode(sign_hash(objecthash, key));
-    return { ...wut, signature };
+    const signatures = keys.map(key => encode(sign_hash(objecthash, key)));
+    if (signatures.length > 1) {
+        return { ...wut, signatures };
+    } else {
+        return { ...wut, signature: signatures[0] };
+    }
 }
 
 /**
@@ -106,7 +106,7 @@ const sign = (wut, key) => {
 const verify_sig = (hash, signature, pubkey) => {
     if (typeof pubkey == "string") pubkey = decode(pubkey);
     if (typeof signature == "string") signature = decode(signature);
-    if (typeof hash == "string") signature = decode(hash);
+    if (typeof hash == "string") hash = decode(hash);
 
     key = secp256k1.keyFromPublic(pubkey);
     return key.verify(hash, signature)
@@ -114,20 +114,27 @@ const verify_sig = (hash, signature, pubkey) => {
 
 /**
  * Checks the signature of an object.
- * @param {object} wut The object to verify. Must have a prop called signature.
- * @param {string|Buffer} pubkey the public key to check.
+ * @param {object} wut The object to verify. Must have a prop called signature or signatures.
+ * @param {string|Buffer|string[]|Buffer[]} pubkey the public key or keys to check.
  * @returns {boolean} true if the signature is valid, false otherwise.
  */
-const verify = (wut, pubkey) => {
+const verify = (wut, pubkeys) => {
     if (typeof wut != "object") {
         throw "wut must be an object";
     }
 
-    if (!wut.signature) {
+    if (!wut.signature && !(wut.signatures && wut.signatures.length)) {
         throw "wut must have a signature";
     }
 
-    return verify_sig(hash(wut), wut.signature, pubkey);
+    const object_hash = hash(wut);
+    const signatures = wut.signatures || [wut.signature];
+    const keys = (isArray(pubkeys) ? pubkeys : [pubkeys]);
+    const all_valid = keys
+        .filter(key => !!signatures.filter(sig => verify_sig(object_hash, sig, key)).length)
+        .length == keys.length;
+
+    return all_valid;
 }
 
 /**

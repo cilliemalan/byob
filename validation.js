@@ -1,4 +1,5 @@
 const { decode, verify } = require('./utils');
+const _ = require('lodash');
 
 
 /**
@@ -66,6 +67,56 @@ const validate_split = (split) => {
     return errors;
 }
 
+/**
+ * Checks if something is a valid transaction
+ * @param {*} transaction 
+ */
+const validate_transaction = (transaction) => {
+    const errors = [];
+    const { splits, signatures, signature, ...rest } = transaction;
+    if (!splits || !splits.length) {
+        errors.push("A transaction must contain at least one split");
+    }
+    if (!signature && (!signatures || !signatures.length)) {
+        errors.push("A transaction must be signed");
+    }
+
+    const restKeys = rest && Object.keys(rest);
+    if (restKeys && restKeys.length) {
+        errors.push(`The transaction contained extra unsupported properties: ${restKeys.join(", ")}`);
+    }
+
+    const split_errors = splits && splits
+        .map(x => ({ split: x, errors: validate_split(x) }))
+        .filter(x => x.errors.length > 0);
+    if (split_errors && split_errors.length) {
+        errors.push("There were problems with one or more splits");
+        split_errors.map(se => `With split: ${se.split} there were problems: ${se.errors.join(", ")}`)
+            .forEach(x => errors.push(x));
+    }
+
+    const from_splits = (splits && splits.filter(x => x.amount < 0)) || [];
+    const to_splits = (splits && splits.filter(x => x.amount > 0)) || [];
+    const total_from = _.sumBy(from_splits, x => -x.amount);
+    const total_to = _.sumBy(to_splits, x => x.amount);
+    if (total_from < total_to) {
+        errors.push(`The from amount ${total_from} is less than the to amount ${total_to}`);
+    }
+    if (total_from === total_to) {
+        errors.push("No transaction charge was given. The debit and credit totals were equal");
+    }
+
+    const from_accounts = _(from_splits)
+        .map(x => x.account)
+        .uniq()
+        .value();
+
+    if (!verify(transaction, from_accounts)) {
+        errors.push("The transaction was not signed with by each from account's private key");
+    }
+
+    return errors;
+}
 
 
 module.exports = {
@@ -73,5 +124,6 @@ module.exports = {
     is_valid_public_key,
     is_valid_private_key,
     is_valid_hash,
-    validate_split
+    validate_split,
+    validate_transaction
 };

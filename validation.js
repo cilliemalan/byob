@@ -1,7 +1,7 @@
 const { decode, verify, verify_sig, abbreviate } = require('./utils');
 const _ = require('lodash');
 
-const max_private_key = Buffer.from('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141', 'hex');
+const max_private_key = Buffer.from('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140', 'hex');
 
 /**
  * Checks if a string is valid base64.
@@ -49,7 +49,7 @@ const is_valid_hash = (buf) => {
  * @param {*} s the thing to check.
  * @returns {boolean} true or false.
  */
-const is_valid_private_key = (key) => is_valid_hash(key) && validate_target(key, max_private_key);
+const is_valid_private_key = (key) => is_valid_hash(key) && buffer_less_than(key, max_private_key);
 
 /**
  * Checks if something is a valid split
@@ -122,21 +122,24 @@ const validate_transaction = (transaction) => {
 
 /**
  * Checks that the bytes from one buffer is less than the bytes from another.
- * @param {Buffer|string} hash The buffer that must be lower than target
- * @param {Buffer|string} target The number that must be greater than hash
+ * @param {Buffer|string} a The one buffer. Returns true if this one is smaller or equal.
+ * @param {Buffer|string} b The other buffer. Returns false if this one is smaller.
  */
-const validate_target = (hash, target) => {
-    if (typeof hash == "string") hash = decode(hash);
-    if (typeof target == "string") target = decode(target);
+const buffer_less_than = (a, b) => {
+    if (typeof a == "string") a = decode(a);
+    if (typeof b == "string") b = decode(b);
 
-    if (hash.length != 32 || target.length != 32) {
-        throw "both hash and target must have length 32";
+    if (a.length != b.length) {
+        throw "both hash and target must have the same length";
     }
 
-    for (let i = 0; i < 32; ++i) {
-        if (hash[i] > target[i]) return false;
-        if (hash[i] < target[i]) return true;
+    const l = a.length;
+    for (let i = 0; i < l; ++i) {
+        if (a[i] > b[i]) return false;
+        if (a[i] < b[i]) return true;
     }
+
+    return true;
 }
 
 
@@ -146,5 +149,6 @@ module.exports = {
     is_valid_private_key,
     is_valid_hash,
     validate_split,
-    validate_transaction
+    validate_transaction,
+    buffer_less_than
 };

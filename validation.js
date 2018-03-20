@@ -1,6 +1,7 @@
 const { decode, verify, verify_sig, abbreviate } = require('./utils');
 const _ = require('lodash');
 
+const max_private_key = Buffer.from('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141', 'hex');
 
 /**
  * Checks if a string is valid base64.
@@ -32,12 +33,12 @@ const is_valid_public_key = (key) => {
  * @param {*} s the thing to check.
  * @returns {boolean} true or false.
  */
-const is_valid_private_key = (key) => {
-    if (typeof key == "string") {
-        return key.length == 43 &&
-            is_valid_base64(key) && is_valid_private_key(decode(key));
-    } else if (key instanceof Buffer) {
-        return key.length == 32;
+const is_valid_hash = (buf) => {
+    if (typeof buf == "string") {
+        return buf.length == 43 &&
+            is_valid_base64(buf) && is_valid_hash(decode(buf));
+    } else if (buf instanceof Buffer) {
+        return buf.length == 32;
     } else {
         return false;
     }
@@ -48,7 +49,7 @@ const is_valid_private_key = (key) => {
  * @param {*} s the thing to check.
  * @returns {boolean} true or false.
  */
-const is_valid_hash = (hash) => is_valid_private_key(hash);
+const is_valid_private_key = (key) => is_valid_hash(key) && validate_target(key, max_private_key);
 
 /**
  * Checks if something is a valid split

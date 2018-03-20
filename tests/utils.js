@@ -2,7 +2,8 @@ const { ok, equal, notEqual, deepEqual } = require('assert');
 
 const { encode, decode, hash, sign_hash, sign,
     verify_sig, verify,
-    generate_key, get_public_key_from_private_key } = require('../utils');
+    generate_key, get_public_key_from_private_key,
+    abbreviate } = require('../utils');
 
 const bequal = (a, b) => equal(a.toString(), b.toString());
 const bnotEqual = (a, b) => notEqual(a.toString(), b.toString());
@@ -50,4 +51,9 @@ module.exports = {
     'can get a valid public key from a private key': () => bequal(pub, get_public_key_from_private_key(key)),
     'can get a public key from gibberish': () => ok(get_public_key_from_private_key('gibberish')),
     'can get a valid public key from gibberish': () => ok(verify(sign({ a: 2 }, 'gibberish'), get_public_key_from_private_key('gibberish'))),
+
+    'abbreviate squashes a pubkey': () => ok(abbreviate(pub)),
+    'abbreviate squashes a hash': () => ok(abbreviate(key)),
+    'abbreviate pubkey has length 10': () => equal(10, abbreviate(pub).length),
+    'abbreviate hash has length 10': () => equal(10, abbreviate(key).length),
 };

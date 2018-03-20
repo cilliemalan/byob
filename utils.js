@@ -158,6 +158,25 @@ const get_public_key_from_private_key = (key) => {
     return Buffer.from(pub.encode('array', true));
 }
 
+/**
+ * Abbreviates a public key or hash
+ * @param {string|Buffer} hash the thing to abbreviate. Either pubkey or hash.
+ */
+const abbreviate = (hash) => {
+    if (hash instanceof Buffer) hash = encode(hash);
+    if (typeof hash != "string") {
+        throw "hash must be a string or buffer";
+    }
+
+    if (hash.length == 43) {
+        return `${hash.substring(0, 10)}`;
+    } else if (hash.length == 44) {
+        return `${hash.substring(0, 4)}..${hash.substring(40, 44)}`;
+    } else {
+        throw "hash must be a pubkey (length = 44) or hash (length = 43)"
+    }
+}
+
 module.exports = {
     encode,
     decode,
@@ -167,5 +186,6 @@ module.exports = {
     verify_sig,
     verify,
     generate_key,
-    get_public_key_from_private_key
+    get_public_key_from_private_key,
+    abbreviate
 };

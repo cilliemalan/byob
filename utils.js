@@ -44,8 +44,9 @@ const hash = (wut, include_signature = false) => {
 
     // strip hash & signature
     let tohash = wut;
+    const keys = Object.keys(wut);
     delete tohash.hash;
-    if (!include_signature && ("signature" in tohash || "signatures" in tohash)) {
+    if (!include_signature && (keys.indexOf("signature") >= 0 || keys.indexOf("signatures") >= 0)) {
         tohash = { ...wut };
         delete tohash.signature;
         delete tohash.signatures;

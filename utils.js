@@ -3,6 +3,7 @@ const { createHash } = require('crypto');
 const elliptic = require("elliptic");
 const { isArray } = require('util');
 const _ = require('lodash');
+const bigInt = require('big-integer');
 
 const secp256k1 = new elliptic.ec('secp256k1');
 
@@ -178,6 +179,24 @@ const abbreviate = (hash) => {
     }
 }
 
+/**
+ * Calculates the hash target. Given a hash rate in hash per X and the
+ * number of X to target, will return the target that will on average
+ * reach this target.
+ * @param {number|string} hash_rate the hash rate in hash/X (e.g. hash/sec). Must be integer.
+ * @param {number|string} target_time the target time in X (e.g. nr of sec if hash rate given in hash/sec). Must be integer.
+ * @returns {Buffer} the target as a 256 bit buffer
+ */
+const calculate_target = (hash_rate, target_time) => {
+    const bhr = bigInt(hash_rate);
+    const btt = bigInt(target_time);
+    const maxh = bigInt("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16);
+    const tgt = maxh.divide(btt).divide(bhr);
+    const tgts = tgt.toString(16);
+    const tgtp = `${'0'.repeat(64 - tgts.length)}${tgts}`;
+    return Buffer.from(tgtp, 'hex');
+}
+
 module.exports = {
     encode,
     decode,
@@ -188,5 +207,6 @@ module.exports = {
     verify,
     generate_key,
     get_public_key_from_private_key,
-    abbreviate
+    abbreviate,
+    calculate_target
 };

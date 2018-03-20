@@ -3,7 +3,7 @@ const { ok, equal, notEqual, deepEqual } = require('assert');
 const { encode, decode, hash, sign_hash, sign,
     verify_sig, verify,
     generate_key, get_public_key_from_private_key,
-    abbreviate } = require('../utils');
+    abbreviate, calculate_target } = require('../utils');
 
 const bequal = (a, b) => equal(a.toString(), b.toString());
 const bnotEqual = (a, b) => notEqual(a.toString(), b.toString());
@@ -56,4 +56,7 @@ module.exports = {
     'abbreviate squashes a hash': () => ok(abbreviate(key)),
     'abbreviate pubkey has length 10': () => equal(10, abbreviate(pub).length),
     'abbreviate hash has length 10': () => equal(10, abbreviate(key).length),
+
+    'calculate_target divides the rate by time 1': () => bequal(calculate_target(256, 1), Buffer.from('00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'hex')),
+    'calculate_target divides the rate by time 2': () => bequal(calculate_target(65536, 1), Buffer.from('0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'hex')),
 };

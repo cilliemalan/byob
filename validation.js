@@ -1,4 +1,4 @@
-const { decode, verify } = require('./utils');
+const { decode, verify, verify_sig, abbreviate } = require('./utils');
 const _ = require('lodash');
 
 
@@ -91,7 +91,7 @@ const validate_transaction = (transaction) => {
         .filter(x => x.errors.length > 0);
     if (split_errors && split_errors.length) {
         errors.push("There were problems with one or more splits");
-        split_errors.map(se => `With split: ${se.split} there were problems: ${se.errors.join(", ")}`)
+        split_errors.map(se => `With split ${abbreviate(se.split.account)}/${se.split.amount} there were problems: ${se.errors.join(", ")}`)
             .forEach(x => errors.push(x));
     }
 

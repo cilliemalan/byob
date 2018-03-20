@@ -163,17 +163,17 @@ const get_public_key_from_private_key = (key) => {
  * @param {string|Buffer} hash the thing to abbreviate. Either pubkey or hash.
  */
 const abbreviate = (hash) => {
+    if (!hash) return "<na>";
+
     if (hash instanceof Buffer) hash = encode(hash);
     if (typeof hash != "string") {
         throw "hash must be a string or buffer";
     }
 
-    if (hash.length == 43) {
+    if (hash.length <= 43) {
         return `${hash.substring(0, 10)}`;
-    } else if (hash.length == 44) {
-        return `${hash.substring(0, 4)}..${hash.substring(40, 44)}`;
-    } else {
-        throw "hash must be a pubkey (length = 44) or hash (length = 43)"
+    } else if (hash.length >= 44) {
+        return `${hash.substring(0, 4)}..${hash.substring(hash.length - 4, hash.length)}`;
     }
 }
 

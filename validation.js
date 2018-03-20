@@ -119,6 +119,26 @@ const validate_transaction = (transaction) => {
 }
 
 
+/**
+ * Checks that the bytes from one buffer is less than the bytes from another.
+ * @param {Buffer|string} hash The buffer that must be lower than target
+ * @param {Buffer|string} target The number that must be greater than hash
+ */
+const validate_target = (hash, target) => {
+    if (typeof hash == "string") hash = decode(hash);
+    if (typeof target == "string") target = decode(target);
+
+    if (hash.length != 32 || target.length != 32) {
+        throw "both hash and target must have length 32";
+    }
+
+    for (let i = 0; i < 32; ++i) {
+        if (hash[i] > target[i]) return false;
+        if (hash[i] < target[i]) return true;
+    }
+}
+
+
 module.exports = {
     is_valid_base64,
     is_valid_public_key,

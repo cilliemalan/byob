@@ -1,5 +1,5 @@
 const objecthash = require('object-hash');
-const { createHash } = require('crypto');
+const { createHash, randomBytes } = require('crypto');
 const elliptic = require("elliptic");
 const { isArray } = require('util');
 const _ = require('lodash');
@@ -197,6 +197,13 @@ const calculate_target = (hash_rate, target_time) => {
     return Buffer.from(tgtp, 'hex');
 }
 
+/**
+ * Generates a nonce with a default length of 32 bytes. Returns a buffer.
+ * @param {string} length 
+ * @returns {Buffer} a buffer filled with randomness
+ */
+const generate_nonce = (length = 32) => randomBytes(length);
+
 module.exports = {
     encode,
     decode,
@@ -208,5 +215,6 @@ module.exports = {
     generate_key,
     get_public_key_from_private_key,
     abbreviate,
-    calculate_target
+    calculate_target,
+    generate_nonce
 };

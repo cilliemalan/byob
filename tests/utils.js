@@ -3,7 +3,7 @@ const { ok, equal, notEqual, deepEqual } = require('assert');
 const { encode, decode, hash, sign_hash, sign,
     verify_sig, verify,
     generate_key, get_public_key_from_private_key,
-    abbreviate, calculate_target } = require('../utils');
+    abbreviate, calculate_target, generate_nonce } = require('../utils');
 
 const bequal = (a, b) => equal(a.toString(), b.toString());
 const bnotEqual = (a, b) => notEqual(a.toString(), b.toString());
@@ -59,4 +59,10 @@ module.exports = {
 
     'calculate_target divides the rate by time 1': () => bequal(calculate_target(256, 1), Buffer.from('00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'hex')),
     'calculate_target divides the rate by time 2': () => bequal(calculate_target(65536, 1), Buffer.from('0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'hex')),
+
+    'generate_nonce generates a nonce': () => ok(generate_nonce() instanceof Buffer),
+    'generate_nonce generates a nonce that by default is 32 long': () => equal(32, generate_nonce().length),
+    'generate_nonce generates a nonce that is the length of the arg': () => equal(5, generate_nonce(5).length),
+    'generate_nonce generates unique nonces': () => bnotEqual(generate_nonce(), generate_nonce()),
+
 };

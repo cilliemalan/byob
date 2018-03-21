@@ -24,7 +24,7 @@ _(files)
     .forEach(kvp => {
         const { 0: test, 1: fn } = kvp;
         const result = execute(fn);
-        console.log(`${test} - ${result ? 'PASS' : 'FAIL'}`);
+        console.log(`${test} - ${result ? '\x1b[0;32mPASS\x1b[0m' : '\x1b[0;31mFAIL\x1b[0m'}`);
         if (!result) {
             ++failed;
         } else {
@@ -33,7 +33,8 @@ _(files)
     });
 
 console.log();
-console.log(`passed ${passed}/${passed + failed}`)
+const color = failed ? "\x1b[0;31m" : "\x1b[0;32m";
+console.log(`${color}passed ${passed}/${passed + failed}\x1b[0m`)
 
 process.exit(failed);
 

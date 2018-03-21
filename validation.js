@@ -74,7 +74,7 @@ const validate_split = (split) => {
  */
 const validate_transaction = (transaction) => {
     const errors = [];
-    const { splits, signatures, signature, ...rest } = transaction;
+    const { splits, nonce, signatures, signature, ...rest } = transaction;
     if (!splits || !splits.length) {
         errors.push("A transaction must contain at least one split");
     }

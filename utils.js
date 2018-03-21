@@ -78,9 +78,11 @@ const sign_hash = (hash, key) => {
  * embedded.
  * @param {object} wut The thing to sign.
  * @param {string|string[]} keys the private key or keys to sign with.
+ * @param {bool} include_hash_and_authors if true will include a hash and author(s) prop
+ * (will be signed WITH the authors but WITHOUT the hash)
  * @returns {object} a new object exactly like wut but with a signature.
  */
-const sign = (wut, keys) => {
+const sign = (wut, keys, include_hash_and_authors = false) => {
     if (!isArray(keys)) keys = [keys];
     if (!keys.length) throw "must specify at least one key";
 
@@ -89,14 +91,28 @@ const sign = (wut, keys) => {
     delete wut.signature;
     delete wut.signatures;
 
+    if (include_hash_and_authors) {
+        if (keys.length > 1) {
+            wut.authors = keys
+                .map(get_public_key_from_private_key)
+                .map(encode);
+        } else {
+            wut.author = encode(get_public_key_from_private_key(keys[0]));
+        }
+    }
 
     const objecthash = hash(wut);
     const signatures = keys.map(key => encode(sign_hash(objecthash, key)));
-    if (signatures.length > 1) {
-        return { ...wut, signatures };
-    } else {
-        return { ...wut, signature: signatures[0] };
+
+    const result = signatures.length > 1
+        ? { ...wut, signatures }
+        : { ...wut, signature: signatures[0] };
+
+    if (include_hash_and_authors) {
+        result.hash = encode(objecthash);
     }
+
+    return result;
 }
 
 /**

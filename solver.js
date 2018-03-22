@@ -17,7 +17,8 @@ const runSolver = (hash, target) => {
         running_process = fork(worker, [encode(hash), encode(target)]);
 
         running_process.on('message', m => {
-            solution = m && m.nonce;
+            console.log(`MESSAGEMESSAGE`, m)
+            solution = m && m.compliment;
         });
 
         running_process.on('close', (code, sig) => {
@@ -36,7 +37,7 @@ const runSolver = (hash, target) => {
 
 
 /**
- * Finds a nonce such that hash ^ nonce < target. Note: if this is called while
+ * Finds a compliment such that hash ^ compliment < target. Note: if this is called while
  * a previous problem is still in the process of being solved, that problem solving
  * process will be cancelled and the previously returned promise will reject.
  * @param {Buffer} hash The hash part of the problem

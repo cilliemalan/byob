@@ -130,7 +130,7 @@ const validate_transaction = (transaction) => {
  */
 const validate_block = (block) => {
     const errors = [];
-    const { transactions, parent, nonce, height, hash: block_hash, author, signature, ...rest } = block;
+    const { transactions, parent, compliment, height, hash: block_hash, author, signature, ...rest } = block;
 
     if (!transactions) {
         errors.push("The block does not have a transactions array");
@@ -138,10 +138,10 @@ const validate_block = (block) => {
         errors.push("transactions is not an array");
     }
 
-    if (!nonce) {
-        errors.push("The block does not have a nonce");
-    } else if (typeof nonce != "string" || !/^[-_a-zA-Z0-9]{43}$/.test(nonce)) {
-        errors.push("The nonce was not a 43 character long base64 string");
+    if (!compliment) {
+        errors.push("The block does not have a compliment");
+    } else if (typeof compliment != "string" || !/^[-_a-zA-Z0-9]{43}$/.test(compliment)) {
+        errors.push("The compliment was not a 43 character long base64 string");
     }
 
     const verify_hash = encode(hash(block));

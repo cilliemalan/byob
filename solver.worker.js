@@ -29,7 +29,7 @@ if (btarget.length != 32) {
 
 
 // does buffer1 ^ buffer2
-const compliment = (a, b) => {
+const xor_buffers = (a, b) => {
 
     const c = new Buffer(32);
     for (let i = 0; i < 32; ++i) {
@@ -54,17 +54,17 @@ let hrs = gethrnow();
 // here we go!
 console.log(`mining...\n`)
 for (; ; ++hashes_done) {
-    const nonce = randomBytes(32);
-    const compl = compliment(nonce, bhash);
-    const digest = createHash('sha256').update(compl).digest();
+    const compliment = randomBytes(32);
+    const complemented = xor_buffers(compliment, bhash);
+    const digest = createHash('sha256').update(complemented).digest();
 
     if (buffer_less_than(digest, btarget)) {
         console.log(`Found solution after ${parseInt(hashes_done / 10000) / 100} million hashes taking ${parseInt(gethrnow() - hrs)} seconds`);
-        console.log(`Nonce:         ${encode(nonce)}`);
+        console.log(`Compliment:    ${encode(compliment)}`);
         console.log(`Hash:          ${encode(bhash)}`);
         console.log(`Target:        ${encode(btarget)}`);
-        console.log(`Hased Nonce:   ${encode(digest)}`);
-        if (process.send) process.send({ nonce: encode(nonce) });
+        console.log(`Hased compl:   ${encode(digest)}`);
+        if (process.send) process.send({ compliment: encode(compliment) });
         break;
     }
 

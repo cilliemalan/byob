@@ -45,7 +45,7 @@ const
             transaction2,
             transaction3
         ],
-        nonce: encode(generate_nonce()),
+        compliment: encode(generate_nonce()),
         height: 0
     }, k[0], true),
     block1 = sign({
@@ -54,13 +54,13 @@ const
             transaction2,
             transaction3
         ],
-        nonce: encode(generate_nonce()),
+        compliment: encode(generate_nonce()),
         height: 1,
         parent: block0.hash
     }, k[1], true),
     block2 = sign({
         transactions: [],
-        nonce: encode(generate_nonce()),
+        compliment: encode(generate_nonce()),
         height: 2,
         parent: block1.hash
     }, k[1], true);
@@ -135,11 +135,11 @@ module.exports = {
     'validate_block passes transactions array': () => notContains(validate_block({ transactions: [] }), "The block does not have a transactions array"),
     'validate_block needs transactions to be an array': () => contains(validate_block({ transactions: {} }), "transactions is not an array"),
     'validate_block needs transactions to be an array': () => notContains(validate_block({ transactions: [] }), "transactions is not an array"),
-    'validate_block needs nonce': () => contains(validate_block({}), "The block does not have a nonce"),
-    'validate_block needs nonce to be string of length > 1': () => contains(validate_block({ nonce: '' }), "The block does not have a nonce"),
-    'validate_block needs nonce to be string of length == 43': () => contains(validate_block({ nonce: 'z'.repeat(40) }), "The nonce was not a 43 character long base64 string"),
-    'validate_block passes valid nonce': () => notContains(validate_block({ nonce: 'z'.repeat(43) }), "The nonce was not a 43 character long base64 string"),
-    'validate_block passes generated nonce': () => notContains(validate_block({ nonce: encode(generate_nonce()) }), "The nonce was not a 43 character long base64 string"),
+    'validate_block needs compliment': () => contains(validate_block({}), "The block does not have a compliment"),
+    'validate_block needs compliment to be string of length > 1': () => contains(validate_block({ compliment: '' }), "The block does not have a compliment"),
+    'validate_block needs compliment to be string of length == 43': () => contains(validate_block({ compliment: 'z'.repeat(40) }), "The compliment was not a 43 character long base64 string"),
+    'validate_block passes valid compliment': () => notContains(validate_block({ compliment: 'z'.repeat(43) }), "The compliment was not a 43 character long base64 string"),
+    'validate_block passes generated compliment': () => notContains(validate_block({ compliment: encode(generate_nonce()) }), "The compliment was not a 43 character long base64 string"),
     'validate_block needs a hash': () => contains(validate_block({}), "The block does not have a hash property"),
     'validate_block passes a hash': () => notContains(validate_block({ hash: 'abc' }), "The block does not have a hash property"),
     'validate_block needs a valid hash': () => contains(validate_block({ hash: 'abc' }), "The block hash is incorrect"),
@@ -164,9 +164,9 @@ module.exports = {
     'validate_block passes correct signature 1': () => notContains(validate_block(sign({ author: p[1] }, k[1])), "The block signature is not valid"),
     'validate_block passes correct signature 2': () => notContains(validate_block(sign({}, k[1], true)), "The block signature is not valid"),
     'validate_block rejects extra props': () => contains(validate_block({ notvalid1: 'a', notvalid2: 5 }), "The block contained extra unsupported properties: notvalid1, notvalid2"),
-    'validate_block passes valid block 0': () => notContains(validate_block(sign({ transactions: [], nonce: encode(generate_nonce()), height: 0 }, k[1], true)), "The block signature is not valid"),
+    'validate_block passes valid block 0': () => notContains(validate_block(sign({ transactions: [], compliment: encode(generate_nonce()), height: 0 }, k[1], true)), "The block signature is not valid"),
     'validate_block passes valid block 1': () => equal(0, validate_block(block0)),
     'validate_block passes valid block 2': () => equal(0, validate_block(block1)),
     'validate_block passes valid block 3': () => equal(0, validate_block(block2)),
-    'validate_block checks transactions': () => contains(validate_block(sign({ transactions: [{ invalid: true }], nonce: encode(generate_nonce()), height: 2, parent: block1.hash }, k[1], true)), "There were problems with one or more transactions")
+    'validate_block checks transactions': () => contains(validate_block(sign({ transactions: [{ invalid: true }], compliment: encode(generate_nonce()), height: 2, parent: block1.hash }, k[1], true)), "There were problems with one or more transactions")
 }

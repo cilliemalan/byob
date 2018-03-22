@@ -116,16 +116,6 @@ const hash_block = (block) => ({
 });
 
 /**
- * Signes a block and checks that the author matches.
- * @param {*} block The block to sign
- */
-const sign_block = (block, key) => {
-    const pub = encode(get_public_key_from_private_key(key));
-    if (block.author != pub) throw "The block author is not the public key for this private key";
-    return sign(block, [key]);
-}
-
-/**
  * Checks a signature of a hash against a pubkey
  * @param {string|Buffer} hash the Hash of the data.
  * @param {string|Buffer} signature the signature to check.
@@ -237,7 +227,6 @@ module.exports = {
     decode,
     hash,
     hash_block,
-    sign_block,
     sign_hash,
     sign,
     verify_sig,

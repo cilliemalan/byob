@@ -40,7 +40,7 @@ const
             { account: p[1], amount: 1 },
             { account: p[0], amount: 1 }]
     }, k[2]),
-    block0 = sign_block(hash_block({
+    block0 = sign(hash_block({
         transactions: [
             transaction1,
             transaction2,
@@ -50,7 +50,7 @@ const
         height: 0,
         author: p[0]
     }), k[0]),
-    block1 = sign_block(hash_block({
+    block1 = sign(hash_block({
         transactions: [
             transaction1,
             transaction2,
@@ -61,7 +61,7 @@ const
         parent: block0.hash,
         author: p[1]
     }), k[1]),
-    block2 = sign_block(hash_block({
+    block2 = sign(hash_block({
         transactions: [],
         compliment: encode(generate_nonce()),
         height: 2,

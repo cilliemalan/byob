@@ -105,6 +105,27 @@ const sign = (wut, keys) => {
 }
 
 /**
+ * Calculates the hash for a block using the special hash config that excludes the
+ * props signature, hash, and compliment props. The result will be the block including
+ * the hash property.
+ * @param {*} block The block to hash
+ */
+const hash_block = (block) => ({
+    ...block,
+    hash: encode(hash(block, ['signature', 'hash', 'compliment']))
+});
+
+/**
+ * Signes a block and checks that the author matches.
+ * @param {*} block The block to sign
+ */
+const sign_block = (block, key) => {
+    const pub = encode(get_public_key_from_private_key(key));
+    if (block.author != pub) throw "The block author is not the public key for this private key";
+    return sign(block, [key]);
+}
+
+/**
  * Checks a signature of a hash against a pubkey
  * @param {string|Buffer} hash the Hash of the data.
  * @param {string|Buffer} signature the signature to check.
@@ -215,6 +236,8 @@ module.exports = {
     encode,
     decode,
     hash,
+    hash_block,
+    sign_block,
     sign_hash,
     sign,
     verify_sig,

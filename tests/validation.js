@@ -6,7 +6,8 @@ const notContains = (a, b) => ok(!a.filter(x => x == b).length);
 const { encode, decode, hash, sign_hash, sign,
     verify_sig, verify,
     generate_key, get_public_key_from_private_key,
-    generate_nonce } = require('../utils');
+    generate_nonce,
+    hash_block, sign_block } = require('../utils');
 
 const {
     is_valid_base64,
@@ -39,7 +40,7 @@ const
             { account: p[1], amount: 1 },
             { account: p[0], amount: 1 }]
     }, k[2]),
-    block0 = sign({
+    block0 = sign_block(hash_block({
         transactions: [
             transaction1,
             transaction2,
@@ -48,8 +49,8 @@ const
         compliment: encode(generate_nonce()),
         height: 0,
         author: p[0]
-    }, k[0], true),
-    block1 = sign({
+    }), k[0]),
+    block1 = sign_block(hash_block({
         transactions: [
             transaction1,
             transaction2,
@@ -59,14 +60,14 @@ const
         height: 1,
         parent: block0.hash,
         author: p[1]
-    }, k[1], true),
-    block2 = sign({
+    }), k[1]),
+    block2 = sign_block(hash_block({
         transactions: [],
         compliment: encode(generate_nonce()),
         height: 2,
         parent: block1.hash,
         author: p[2]
-    }, k[2], true);
+    }), k[2]);
 
 module.exports = {
     'is_valid_base64 valid for valid base64': () => ok(is_valid_base64('blahdiblah')),

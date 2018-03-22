@@ -40,10 +40,6 @@ module.exports = {
     'sign adds a prop signature': () => ok(sign({ a: 2 }, key).signature),
     'sign adds a prop called signatures if multiple keys are given': () => ok(sign({ a: 2 }, [key, key2]).signatures),
     'sign adds a prop for each signature': () => equal(2, sign({ a: 2 }, [key, key2]).signatures.length),
-    'sign adds a prop called author if asked': () => equal(encode(pub), sign({ a: 3 }, key, true).author),
-    'sign adds a prop called hash if asked for author': () => ok(sign({ a: 3 }, key, true).hash),
-    'sign adds a prop called authors if asked and there are multiple keys': () => equal(2, sign({ a: 3 }, [key, key2], true).authors.length),
-    'sign adds a prop called authors if asked and they match authors': () => ok(encode(pub) == sign({ a: 5 }, [key, key2], true).authors[0] && encode(pub2) == sign({ a: 5 }, [key, key2], true).authors[1]),
 
     'verify can verify a correct signature': () => ok(verify(sign({ a: 1 }, key), pub)),
     'verify can verify an incorrect signature': () => ok(!verify(sign({ a: 1 }, key2), pub)),

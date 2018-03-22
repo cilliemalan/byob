@@ -46,7 +46,8 @@ const
             transaction3
         ],
         compliment: encode(generate_nonce()),
-        height: 0
+        height: 0,
+        author: p[0]
     }, k[0], true),
     block1 = sign({
         transactions: [
@@ -56,14 +57,16 @@ const
         ],
         compliment: encode(generate_nonce()),
         height: 1,
-        parent: block0.hash
+        parent: block0.hash,
+        author: p[1]
     }, k[1], true),
     block2 = sign({
         transactions: [],
         compliment: encode(generate_nonce()),
         height: 2,
-        parent: block1.hash
-    }, k[1], true);
+        parent: block1.hash,
+        author: p[2]
+    }, k[2], true);
 
 module.exports = {
     'is_valid_base64 valid for valid base64': () => ok(is_valid_base64('blahdiblah')),
@@ -161,8 +164,7 @@ module.exports = {
     'validate_block needs one signature': () => contains(validate_block(sign({}, k)), "The block is not signed"),
     'validate_block passes one signature': () => notContains(validate_block(sign({}, k[0])), "The block is not signed"),
     'validate_block needs correct signature': () => contains(validate_block(sign({ author: p[1] }, k[0])), "The block signature is not valid"),
-    'validate_block passes correct signature 1': () => notContains(validate_block(sign({ author: p[1] }, k[1])), "The block signature is not valid"),
-    'validate_block passes correct signature 2': () => notContains(validate_block(sign({}, k[1], true)), "The block signature is not valid"),
+    'validate_block passes correct signature': () => notContains(validate_block(sign({ author: p[1] }, k[1])), "The block signature is not valid"),
     'validate_block rejects extra props': () => contains(validate_block({ notvalid1: 'a', notvalid2: 5 }), "The block contained extra unsupported properties: notvalid1, notvalid2"),
     'validate_block passes valid block 0': () => notContains(validate_block(sign({ transactions: [], compliment: encode(generate_nonce()), height: 0 }, k[1], true)), "The block signature is not valid"),
     'validate_block passes valid block 1': () => equal(0, validate_block(block0)),

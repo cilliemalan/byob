@@ -140,8 +140,8 @@ const validate_block = (block) => {
 
     if (!nonce) {
         errors.push("The block does not have a nonce");
-    } else if (typeof nonce != "string" || !/^[-_a-zA-Z0-9]{1,45}$/.test(nonce)) {
-        errors.push("The nonce was not a 1-45 character long base64 string");
+    } else if (typeof nonce != "string" || !/^[-_a-zA-Z0-9]{43}$/.test(nonce)) {
+        errors.push("The nonce was not a 43 character long base64 string");
     }
 
     const verify_hash = encode(hash(block));

@@ -52,8 +52,9 @@ const is_valid_hash = (buf) => {
 const is_valid_private_key = (key) => is_valid_hash(key) && buffer_less_than(key, max_private_key);
 
 /**
- * Checks if something is a valid split
- * @param {*} split 
+ * Checks if something is a valid split.
+ * @param {*} split the split to check.
+ * @returns {string[]} an array of errors.
  */
 const validate_split = (split) => {
     const errors = [];
@@ -69,8 +70,9 @@ const validate_split = (split) => {
 }
 
 /**
- * Checks if something is a valid transaction
- * @param {*} transaction 
+ * Checks if something is a valid transaction.
+ * @param {*} transaction the transaction to check.
+ * @returns {string[]} an array of errors.
  */
 const validate_transaction = (transaction) => {
     const errors = [];

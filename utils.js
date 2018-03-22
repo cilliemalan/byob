@@ -36,18 +36,18 @@ const decode = (encoded) => Buffer.from(encoded, 'base64');
  * it exists.
  * @param {object} wut The thing to hash.
  * @param {Array<string|RegExp>} exclude_props An array of regex/string when matched to
- * prop name to exclude from hash calculation. By default signature, signatures,
- * and hash are excluded.
+ * prop name to exclude from hash calculation. By default includes all props
  * @returns {Buffer} The hash of the object.
  */
-const hash = (wut, exclude_props = [/^signatures?$|^hash$/]) => {
+const hash = (wut, exclude_props) => {
     if (typeof wut != "object") {
         throw "this method only hashes objects";
     }
 
     // strip to be excluded props
-    let tohash = { ...wut };
+    let tohash = wut;
     if (exclude_props && _.isArray(exclude_props)) {
+        tohash = { ...wut };
         const keys = Object.keys(wut);
         exclude_props.forEach(to_exclude => {
             if (_.isRegExp(to_exclude)) {
@@ -83,10 +83,9 @@ const sign_hash = (hash, key) => {
  * embedded.
  * @param {object} wut The thing to sign.
  * @param {string|string[]} keys the private key or keys to sign with.
- * @param {bool} include_hash if true will include the object hash in the signed output.
  * @returns {object} a new object exactly like wut but with a signature.
  */
-const sign = (wut, keys, include_hash = false) => {
+const sign = (wut, keys) => {
     if (!isArray(keys)) keys = [keys];
     if (!keys.length) throw "must specify at least one key";
 
@@ -95,16 +94,12 @@ const sign = (wut, keys, include_hash = false) => {
     delete wut.signature;
     delete wut.signatures;
 
-    const objecthash = hash(wut);
+    const objecthash = hash(wut, []);
     const signatures = keys.map(key => encode(sign_hash(objecthash, key)));
 
     const result = signatures.length > 1
         ? { ...wut, signatures }
         : { ...wut, signature: signatures[0] };
-
-    if (include_hash) {
-        result.hash = encode(objecthash);
-    }
 
     return result;
 }
@@ -128,7 +123,8 @@ const verify_sig = (hash, signature, pubkey) => {
 /**
  * Checks the signature of an object.
  * @param {object} wut The object to verify. Must have a prop called signature or signatures.
- * @param {string|Buffer|string[]|Buffer[]} pubkey the public key or keys to check.
+ * @param {string|Buffer|string[]|Buffer[]} pubkeys the public key or keys to check.
+ * If not specified will check author(s) prop
  * @returns {boolean} true if the signature is valid, false otherwise.
  */
 const verify = (wut, pubkeys) => {
@@ -140,8 +136,9 @@ const verify = (wut, pubkeys) => {
         return false;
     }
 
-    const object_hash = hash(wut);
+    const object_hash = hash(wut, [/^signatures?$/]);
     const signatures = wut.signatures || [wut.signature];
+    if (pubkeys === undefined) pubkeys = wut.author || wut.authors;
     const keys = (isArray(pubkeys) ? pubkeys : [pubkeys]);
     const all_valid = keys
         .filter(key => !!signatures.filter(sig => verify_sig(object_hash, sig, key)).length)

@@ -31,11 +31,8 @@ module.exports = {
     'hash does care about null': () => bequal(hash({ a: 2, b: null }), hash({ b: null, a: 2 })),
     'hash does care about undefined': () => bequal(hash({ a: 2, b: undefined }), hash({ b: undefined, a: 2 })),
     'hash does not see null and undefined the same': () => bnotEqual(hash({ a: 2, b: undefined }), hash({ b: null, a: 2 })),
-    'hash does not see hash': () => bequal(hash({ a: 2, hash: 'abc' }), hash({ a: 2, hash: 'def' })),
-    'hash does not see signature by default': () => bequal(hash({ a: 2, signature: 'abc' }), hash({ a: 2, signature: 'def' })),
-    'hash does not see signatures by default': () => bequal(hash({ a: 2, signatures: ['abc'] }), hash({ a: 2, signatures: ['def'] })),
-    'hash includes signature if asked': () => bnotEqual(hash({ a: 2, signature: 'abc' }, true), hash({ a: 2, signature: 'def' }, true)),
-    'hash includes signatures if asked': () => bnotEqual(hash({ a: 2, signatures: ['abc'] }, true), hash({ a: 2, signatures: ['def'] }, true)),
+    'hash does not see props if asked': () => bequal(hash({ a: 2, zzz: 'abc' }, ['zzz']), hash({ a: 2, zzz: 'def' }, ['zzz'])),
+    'hash does not see props if asked via regex': () => bequal(hash({ a: 2, dzzzc: 'abc' }, [/zzz/]), hash({ a: 2, azzzb: 'def' }, [/zzz/])),
 
     'sign adds a prop signature': () => ok(sign({ a: 2 }, key).signature),
     'sign adds a prop called signatures if multiple keys are given': () => ok(sign({ a: 2 }, [key, key2]).signatures),

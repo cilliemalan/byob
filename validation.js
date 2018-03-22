@@ -144,7 +144,7 @@ const validate_block = (block) => {
         errors.push("The compliment was not a 43 character long base64 string");
     }
 
-    const verify_hash = encode(hash(block));
+    const verify_hash = encode(hash(block,['signature', 'hash', 'compliment']));
     if (!block_hash) {
         errors.push("The block does not have a hash property");
     } else {
@@ -182,7 +182,7 @@ const validate_block = (block) => {
         errors.push("The block is not signed");
     } else if (!is_valid_base64(signature)) {
         errors.push("The block signature was not a valid base64 string");
-    } else if (author_valid && !verify_sig(verify_hash, signature, author)) {
+    } else if (author_valid && !verify(block)) {
         errors.push("The block signature is not valid");
     }
 

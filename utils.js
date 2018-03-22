@@ -35,22 +35,27 @@ const decode = (encoded) => Buffer.from(encoded, 'base64');
  * hashes an object. Will by default not include a prop called "signature" if
  * it exists.
  * @param {object} wut The thing to hash.
- * @param {boolean} include_signature Set to true to hash including any signature(s).
+ * @param {Array<string|RegExp>} exclude_props An array of regex/string when matched to
+ * prop name to exclude from hash calculation. By default signature, signatures,
+ * and hash are excluded.
  * @returns {Buffer} The hash of the object.
  */
-const hash = (wut, include_signature = false) => {
+const hash = (wut, exclude_props = [/^signatures?$|^hash$/]) => {
     if (typeof wut != "object") {
         throw "this method only hashes objects";
     }
 
-    // strip hash & signature
-    let tohash = wut;
-    const keys = Object.keys(wut);
-    delete tohash.hash;
-    if (!include_signature && (keys.indexOf("signature") >= 0 || keys.indexOf("signatures") >= 0)) {
-        tohash = { ...wut };
-        delete tohash.signature;
-        delete tohash.signatures;
+    // strip to be excluded props
+    let tohash = { ...wut };
+    if (exclude_props && _.isArray(exclude_props)) {
+        const keys = Object.keys(wut);
+        exclude_props.forEach(to_exclude => {
+            if (_.isRegExp(to_exclude)) {
+                keys.filter(x => to_exclude.test(x)).forEach(x => delete tohash[x]);
+            } else if (typeof to_exclude == "string") {
+                keys.filter(x => to_exclude == x).forEach(x => delete tohash[x]);
+            }
+        });
     }
 
     const hashed = objecthash(tohash, { algorithm: 'sha256', encoding: 'base64' });

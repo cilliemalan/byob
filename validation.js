@@ -1,5 +1,7 @@
-const { decode, verify, verify_sig, abbreviate } = require('./utils');
+const { encode, hash, decode, verify, verify_sig, abbreviate } = require('./utils');
 const _ = require('lodash');
+const { isArray } = _;
+
 
 const max_private_key = Buffer.from('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140', 'hex');
 
@@ -121,6 +123,91 @@ const validate_transaction = (transaction) => {
     return errors;
 }
 
+/**
+ * Checks if something is a valid block. Does not validate parentage or if target is within range.
+ * @param {*} block the block to validate.
+ * @returns {string[]} an array of errors.
+ */
+const validate_block = (block) => {
+    const errors = [];
+    const { transactions, parent, nonce, height, hash: block_hash, author, signature, ...rest } = block;
+
+    if (!transactions) {
+        errors.push("The block does not have a transactions array");
+    } else if (!isArray(transactions)) {
+        errors.push("transactions is not an array");
+    }
+
+    if (!nonce) {
+        errors.push("The block does not have a nonce");
+    } else if (typeof nonce != "string" || !/^[-_a-zA-Z0-9]{1,45}$/.test(nonce)) {
+        errors.push("The nonce was not a 1-45 character long base64 string");
+    }
+
+    const verify_hash = encode(hash(block));
+    if (!block_hash) {
+        errors.push("The block does not have a hash property");
+    } else {
+        if (block_hash != verify_hash) {
+            errors.push("The block hash is incorrect");
+        }
+    }
+
+    let author_valid = false;
+    if (!author) {
+        errors.push("The block has no author");
+    }
+    else if (!is_valid_base64(author)) {
+        errors.push("author is not valid base64");
+    }
+    else if (!is_valid_public_key(author)) {
+        errors.push("The block author is not valid");
+    } else {
+        author_valid = true;
+    }
+
+    if (parent && !is_valid_hash(parent)) {
+        errors.push("The block parent is not valid");
+    }
+
+    if (typeof height != "number" || height < 0 || !Number.isSafeInteger(height)) {
+        errors.push("The height is not valid");
+    }
+
+    if (!parent && height !== 0) {
+        errors.push("No parent was specified but the height was not 0");
+    }
+
+    if (!signature) {
+        errors.push("The block is not signed");
+    } else if (!is_valid_base64(signature)) {
+        errors.push("The block signature was not a valid base64 string");
+    } else if (author_valid && !verify_sig(verify_hash, signature, author)) {
+        errors.push("The block signature is not valid");
+    }
+
+    const terrors = [];
+
+    if (transactions) {
+        transactions.forEach(transaction => {
+            const thash = hash(transaction);
+            const iterrors = validate_transaction(transaction);
+            iterrors.forEach(te => terrors.push(`Transaction ${abbreviate(thash)} - ${te}`));
+        });
+    }
+
+    if (terrors.length) {
+        errors.push("There were problems with one or more transactions");
+        terrors.forEach(te => errors.push(te));
+    }
+    
+    const restKeys = rest && Object.keys(rest);
+    if (restKeys && restKeys.length) {
+        errors.push(`The block contained extra unsupported properties: ${restKeys.join(", ")}`);
+    }
+
+    return errors;
+}
 
 /**
  * Checks that the bytes from one buffer is less than the bytes from another.
@@ -152,5 +239,6 @@ module.exports = {
     is_valid_hash,
     validate_split,
     validate_transaction,
+    validate_block,
     buffer_less_than
 };

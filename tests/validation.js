@@ -5,7 +5,8 @@ const notContains = (a, b) => ok(!a.filter(x => x == b).length);
 
 const { encode, decode, hash, sign_hash, sign,
     verify_sig, verify,
-    generate_key, get_public_key_from_private_key } = require('../utils');
+    generate_key, get_public_key_from_private_key,
+    generate_nonce } = require('../utils');
 
 const {
     is_valid_base64,
@@ -14,7 +15,8 @@ const {
     is_valid_hash,
     validate_split,
     validate_transaction,
-    buffer_less_than } = require('../validation');
+    buffer_less_than,
+    validate_block } = require('../validation');
 
 const k = [generate_key(), generate_key(), generate_key()].map(encode);
 const p = k.map(get_public_key_from_private_key).map(encode);
@@ -36,7 +38,32 @@ const
             { account: p[2], amount: -2.01 },
             { account: p[1], amount: 1 },
             { account: p[0], amount: 1 }]
-    }, k[2]);
+    }, k[2]),
+    block0 = sign({
+        transactions: [
+            transaction1,
+            transaction2,
+            transaction3
+        ],
+        nonce: encode(generate_nonce()),
+        height: 0
+    }, k[0], true),
+    block1 = sign({
+        transactions: [
+            transaction1,
+            transaction2,
+            transaction3
+        ],
+        nonce: encode(generate_nonce()),
+        height: 1,
+        parent: block0.hash
+    }, k[1], true),
+    block2 = sign({
+        transactions: [],
+        nonce: encode(generate_nonce()),
+        height: 2,
+        parent: block1.hash
+    }, k[1], true);
 
 module.exports = {
     'is_valid_base64 valid for valid base64': () => ok(is_valid_base64('blahdiblah')),
@@ -103,4 +130,43 @@ module.exports = {
     'buffer_less_than is true if a equals b for multiple bytes': () => ok(buffer_less_than(Buffer.from([2, 0, 0]), Buffer.from([2, 0, 0]))),
     'buffer_less_than is false if a is more than b for multiple bytes': () => ok(!buffer_less_than(Buffer.from([2, 0, 0]), Buffer.from([1, 0, 0]))),
     'buffer_less_than is false if a is more than b for multiple bytes even if really close': () => ok(!buffer_less_than(Buffer.from([1, 0, 1]), Buffer.from([1, 0, 0]))),
+
+    'validate_block needs transactions array': () => contains(validate_block({}), "The block does not have a transactions array"),
+    'validate_block passes transactions array': () => notContains(validate_block({ transactions: [] }), "The block does not have a transactions array"),
+    'validate_block needs transactions to be an array': () => contains(validate_block({ transactions: {} }), "transactions is not an array"),
+    'validate_block needs transactions to be an array': () => notContains(validate_block({ transactions: [] }), "transactions is not an array"),
+    'validate_block needs nonce': () => contains(validate_block({}), "The block does not have a nonce"),
+    'validate_block needs nonce to be string of length > 1': () => contains(validate_block({ nonce: '' }), "The block does not have a nonce"),
+    'validate_block needs nonce to be string of length < 32': () => contains(validate_block({ nonce: 'z'.repeat(46) }), "The nonce was not a 1-45 character long base64 string"),
+    'validate_block passes valid nonce': () => notContains(validate_block({ nonce: 'abcef' }), "The nonce was not a 1-45 character long base64 string"),
+    'validate_block passes generated nonce': () => notContains(validate_block({ nonce: encode(generate_nonce()) }), "The nonce was not a 1-45 character long base64 string"),
+    'validate_block needs a hash': () => contains(validate_block({}), "The block does not have a hash property"),
+    'validate_block passes a hash': () => notContains(validate_block({ hash: 'abc' }), "The block does not have a hash property"),
+    'validate_block needs a valid hash': () => contains(validate_block({ hash: 'abc' }), "The block hash is incorrect"),
+    'validate_block passes a valid hash': () => notContains(validate_block({ a: 'a', hash: encode(hash({ a: 'a' })) }), "The block hash is incorrect"),
+    'validate_block needs an author': () => contains(validate_block({}), "The block has no author"),
+    'validate_block needs a valid base64 author': () => contains(validate_block({ author: '###' }), "author is not valid base64"),
+    'validate_block needs a valid pubkey author': () => contains(validate_block({ author: 'abcdefg' }), "The block author is not valid"),
+    'validate_block passes a valid author': () => notContains(validate_block({ author: p[0] }), "The block author is not valid"),
+    'validate_block needs parent to be valid': () => contains(validate_block({ parent: 'vzxvzxv' }), "The block parent is not valid"),
+    'validate_block passes parent when valid': () => notContains(validate_block({ parent: encode(hash({})) }), "The block parent is not valid"),
+    'validate_block needs height': () => contains(validate_block({}), "The height is not valid"),
+    'validate_block needs height to be a number': () => contains(validate_block({ height: '123' }), "The height is not valid"),
+    'validate_block needs height to be an integer': () => contains(validate_block({ height: 5.5 }), "The height is not valid"),
+    'validate_block passes valid height': () => notContains(validate_block({ height: 4 }), "The height is not valid"),
+    'validate_block needs parent when height != 0': () => contains(validate_block({ height: 4 }), "No parent was specified but the height was not 0"),
+    'validate_block passes no parent when == 0': () => notContains(validate_block({ height: 0 }), "No parent was specified but the height was not 0"),
+    'validate_block passes height when parent': () => notContains(validate_block({ parent: encode(hash({})), height: 100 }), "No parent was specified but the height was not 0"),
+    'validate_block needs signature': () => contains(validate_block({}), "The block is not signed"),
+    'validate_block needs one signature': () => contains(validate_block(sign({}, k)), "The block is not signed"),
+    'validate_block passes one signature': () => notContains(validate_block(sign({}, k[0])), "The block is not signed"),
+    'validate_block needs correct signature': () => contains(validate_block(sign({ author: p[1] }, k[0])), "The block signature is not valid"),
+    'validate_block passes correct signature 1': () => notContains(validate_block(sign({ author: p[1] }, k[1])), "The block signature is not valid"),
+    'validate_block passes correct signature 2': () => notContains(validate_block(sign({}, k[1], true)), "The block signature is not valid"),
+    'validate_block rejects extra props': () => contains(validate_block({ notvalid1: 'a', notvalid2: 5 }), "The block contained extra unsupported properties: notvalid1, notvalid2"),
+    'validate_block passes valid block 0': () => notContains(validate_block(sign({ transactions: [], nonce: encode(generate_nonce()), height: 0 }, k[1], true)), "The block signature is not valid"),
+    'validate_block passes valid block 1': () => equal(0, validate_block(block0)),
+    'validate_block passes valid block 2': () => equal(0, validate_block(block1)),
+    'validate_block passes valid block 3': () => equal(0, validate_block(block2)),
+    'validate_block checks transactions': () => contains(validate_block(sign({ transactions: [{ invalid: true }], nonce: encode(generate_nonce()), height: 2, parent: block1.hash }, k[1], true)), "There were problems with one or more transactions")
 }

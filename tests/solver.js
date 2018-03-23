@@ -5,4 +5,5 @@ const { solve } = require('../solver');
 
 module.exports = {
     'solver can solve an easy problem quickly': async () => ok(await solve(generate_nonce(), calculate_target(1000, 1))),
+    'solver can solve an not-so-easy problem': async () => ok(await solve(generate_nonce(), calculate_target(1000, 1000))),
 }

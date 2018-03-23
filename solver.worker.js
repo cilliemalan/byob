@@ -2,31 +2,16 @@ const { encode, decode } = require('./utils');
 const { buffer_less_than } = require('./validation');
 const { randomBytes, createHash } = require('crypto');
 
-// some validation
-const shash = process.argv[2];
-const starget = process.argv[3];
+// initialize blank
+let bhash = null;
+let btarget = null;
 
-if (!shash) {
-    console.error('no hash was provided');
-    process.exit(5);
-}
-if (!starget) {
-    console.error('no target was provided');
-    process.exit(6);
-}
-
-const bhash = decode(shash);
-const btarget = decode(starget);
-
-if (bhash.length != 32) {
-    console.error(`the hash was not valid. Needs to be 32 bytes long. was ${bhash.length} bytes long.`);
-    process.exit(7);
-}
-if (btarget.length != 32) {
-    console.error(`the target was not valid. Needs to be 32 bytes long. was ${btarget.length} bytes long.`);
-    process.exit(8);
-}
-
+process.on('message', m => {
+    if (m) {
+        if (m.hash) bhash = decode(m.hash);
+        if (m.target) btarget = decode(m.target);
+    }
+});
 
 // does buffer1 ^ buffer2
 const xor_buffers = (a, b) => {
@@ -51,29 +36,46 @@ let hashes_done = 0;
 let hrt = gethrnow();
 let hrs = gethrnow();
 
-// here we go!
-console.log(`mining...\n`)
-for (; ; ++hashes_done) {
-    const compliment = randomBytes(32);
-    const complemented = xor_buffers(compliment, bhash);
-    const digest = createHash('sha256').update(complemented).digest();
+// main mining function
+const mine = (iterations = 10000) => {
+    if (!bhash || !btarget) {
+        console.log('waiting for problem...');
+        setTimeout(mine, 100);
+    } else {
 
-    if (buffer_less_than(digest, btarget)) {
-        console.log(`Found solution after ${parseInt(hashes_done / 10000) / 100} million hashes taking ${parseInt(gethrnow() - hrs)} seconds`);
-        console.log(`Compliment:    ${encode(compliment)}`);
-        console.log(`Hash:          ${encode(bhash)}`);
-        console.log(`Target:        ${encode(btarget)}`);
-        console.log(`Hased compl:   ${encode(digest)}`);
-        if (process.send) process.send({ compliment: encode(compliment) });
-        break;
-    }
+        for (; iterations; --iterations, ++hashes_done) {
+            const compliment = randomBytes(32);
+            const complemented = xor_buffers(compliment, bhash);
+            const digest = createHash('sha256').update(complemented).digest();
 
-    // print a status report
-    if (hashes_done && (hashes_done % REPORT_FREQ == 0)) {
-        const hrnow = gethrnow();
-        const diff = hrnow - hrt;
-        const s = REPORT_FREQ / diff;
-        hrt = hrnow;
-        process.stdout.write(`hashrate: ${parseInt(s / 100) / 10} KH/s      \r`);
+            if (buffer_less_than(digest, btarget)) {
+                console.log(`Found solution after ${parseInt(hashes_done / 10000) / 100} million hashes taking ${parseInt(gethrnow() - hrs)} seconds`);
+                // console.log(`Compliment:    ${encode(compliment)}`);
+                // console.log(`Hash:          ${encode(bhash)}`);
+                // console.log(`Target:        ${encode(btarget)}`);
+                // console.log(`Hased compl:   ${encode(digest)}`);
+
+                if (process.send) process.send({ target: encode(btarget), hash: encode(bhash), compliment: encode(compliment) });
+
+                //reset
+                bhash = null;
+                break;
+            }
+
+            // print a status report
+            if (hashes_done && (hashes_done % REPORT_FREQ == 0)) {
+                const hrnow = gethrnow();
+                const diff = hrnow - hrt;
+                const s = REPORT_FREQ / diff;
+                hrt = hrnow;
+                process.stdout.write(`hashrate: ${parseInt(s / 100) / 10} KH/s      \r`);
+            }
+        }
+
+        setImmediate(mine);
     }
 }
+
+
+// here we go!
+setImmediate(mine);

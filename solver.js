@@ -4,34 +4,24 @@ const { resolve: resolvePath } = require('path');
 
 const node = process.argv0;
 const worker = resolvePath(__dirname, 'solver.worker.js');
-let running_process;
+let running_process = fork(worker);
 
-const runSolver = (hash, target) => {
-    if (running_process) {
-        running_process.kill('SIGINT');
-        running_process = null;
-    }
+const updateProblem = (hash, target) => {
 
     return new Promise((resolve, reject) => {
-        let solution;
-        running_process = fork(worker, [encode(hash), encode(target)]);
 
-        running_process.on('message', m => {
-            console.log(`MESSAGEMESSAGE`, m)
-            solution = m && m.compliment;
-        });
+        const onmessage = m => {
+            const bhash = decode(m.hash);
+            const bcomp = decode(m.compliment);
+            const btarget = decode(m.target);
 
-        running_process.on('close', (code, sig) => {
-            if (code == 0) {
-                if (!solution) {
-                    reject('Child process exited without providing a solution');
-                } else {
-                    resolve(solution);
-                }
-            } else {
-                reject(`The child process exited with code ${code}`);
+            if (bhash.equals(hash) && btarget.equals(target)) {
+                resolve(bcomp);
             }
-        })
+        }
+
+        running_process.once('message', onmessage);
+        running_process.send({ hash: encode(hash), target: encode(target) });
     });
 }
 
@@ -39,7 +29,7 @@ const runSolver = (hash, target) => {
 /**
  * Finds a compliment such that hash ^ compliment < target. Note: if this is called while
  * a previous problem is still in the process of being solved, that problem solving
- * process will be cancelled and the previously returned promise will reject.
+ * process will be cancelled and the previously returned promise will never resolve.
  * @param {Buffer} hash The hash part of the problem
  * @param {Buffer} target The target under which the solution should be
  * @returns {Promise<Buffer>} the solution to the problem
@@ -48,7 +38,7 @@ const solve = (hash, target) => {
     if (typeof hash == "string") hash = decode(hash);
     if (typeof target == "string") target = decode(target);
 
-    return runSolver(hash, target);
+    return updateProblem(hash, target);
 }
 
 module.exports = {

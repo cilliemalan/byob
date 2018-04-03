@@ -105,17 +105,6 @@ const sign = (wut, keys) => {
 }
 
 /**
- * Calculates the hash for a block using the special hash config that excludes the
- * props signature, hash, and compliment props. The result will be the block including
- * the hash property.
- * @param {*} block The block to hash
- */
-const hash_block = (block) => ({
-    ...block,
-    hash: encode(hash(block, ['signature', 'hash', 'compliment']))
-});
-
-/**
  * Checks a signature of a hash against a pubkey
  * @param {string|Buffer} hash the Hash of the data.
  * @param {string|Buffer} signature the signature to check.
@@ -248,7 +237,6 @@ module.exports = {
     encode,
     decode,
     hash,
-    hash_block,
     sign_hash,
     sign,
     verify_sig,

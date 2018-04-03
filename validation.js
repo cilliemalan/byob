@@ -144,7 +144,7 @@ const validate_block = (block) => {
         errors.push("The compliment was not a 43 character long base64 string");
     }
 
-    const verify_hash = encode(hash(block,['signature', 'hash', 'compliment']));
+    const verify_hash = encode(hash(block, ['signature', 'hash', 'compliment']));
     if (!block_hash) {
         errors.push("The block does not have a hash property");
     } else {
@@ -200,7 +200,7 @@ const validate_block = (block) => {
         errors.push("There were problems with one or more transactions");
         terrors.forEach(te => errors.push(te));
     }
-    
+
     const restKeys = rest && Object.keys(rest);
     if (restKeys && restKeys.length) {
         errors.push(`The block contained extra unsupported properties: ${restKeys.join(", ")}`);
@@ -231,6 +231,20 @@ const buffer_less_than = (a, b) => {
     return true;
 }
 
+/**
+ * Checks if the block compliment and hash solve the PoW problem.
+ * @param {Object} block The block to validate
+ * @param {Buffer|string} target The target for the solution
+ */
+const is_block_solution_under_target = (block, target) => {
+    if (typeof target == "string") target = decode(target);
+    const { compliment, hash } = block;
+
+    const complemented = xor_buffers(compliment, hash);
+    const digest = createHash('sha256').update(complemented).digest();
+    return buffer_less_than(digest, target);
+}
+
 
 module.exports = {
     is_valid_base64,
@@ -240,5 +254,6 @@ module.exports = {
     validate_split,
     validate_transaction,
     validate_block,
-    buffer_less_than
+    buffer_less_than,
+    is_block_solution_under_target
 };

@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "Cillié Malan <cilliemalan@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "test": "node tests"
+  },
   "dependencies": {
     "big-integer": "^1.6.27",
     "elliptic": "^6.4.0",

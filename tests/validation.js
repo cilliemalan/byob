@@ -7,7 +7,9 @@ const { encode, decode, hash, sign_hash, sign,
     verify_sig, verify,
     generate_key, get_public_key_from_private_key,
     generate_nonce,
-    hash_block, sign_block } = require('../utils');
+    sign_block } = require('../utils');
+
+const { hash_block } = require('../blockchain');
 
 const {
     is_valid_base64,

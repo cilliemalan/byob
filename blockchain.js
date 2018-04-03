@@ -1,4 +1,9 @@
-const { sign, encode, get_public_key_from_private_key, hash } = require('./utils');
+const {
+    sign,
+    encode,
+    decode,
+    get_public_key_from_private_key,
+    hash } = require('./utils');
 const { validate_block, validate_transaction, validate_split } = require('./validation');
 
 const validate_throw = (wut, validate, message) => {
@@ -76,5 +81,6 @@ const initialize_block = (transactions, height, parent, private_key) => {
 module.exports = {
     create_split,
     create_transaction,
-    initialize_block
+    initialize_block,
+    hash_block
 };

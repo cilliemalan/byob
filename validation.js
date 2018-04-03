@@ -1,6 +1,7 @@
 const { encode, hash, decode, verify, verify_sig, abbreviate } = require('./utils');
 const _ = require('lodash');
 const { isArray } = _;
+const { createHash } = require('crypto');
 
 
 const max_private_key = Buffer.from('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140', 'hex');

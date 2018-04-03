@@ -189,7 +189,7 @@ const validate_block = (block) => {
 
     const terrors = [];
 
-    if (transactions) {
+    if (transactions && transactions.forEach) {
         transactions.forEach(transaction => {
             const thash = hash(transaction);
             const iterrors = validate_transaction(transaction);

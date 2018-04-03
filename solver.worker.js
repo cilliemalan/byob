@@ -1,4 +1,4 @@
-const { encode, decode } = require('./utils');
+const { encode, decode, xor_buffers } = require('./utils');
 const { buffer_less_than } = require('./validation');
 const { randomBytes, createHash } = require('crypto');
 
@@ -12,17 +12,6 @@ process.on('message', m => {
         if (m.target) btarget = decode(m.target);
     }
 });
-
-// does buffer1 ^ buffer2
-const xor_buffers = (a, b) => {
-
-    const c = new Buffer(32);
-    for (let i = 0; i < 32; ++i) {
-        c[i] = a[i] ^ b[i];
-    }
-
-    return c;
-}
 
 // gets time now in seconds, but like in high resolution.
 const gethrnow = () => {

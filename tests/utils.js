@@ -21,7 +21,7 @@ module.exports = {
     'decode decodes something into a buffer': () => ok(decode('asdasd') instanceof Buffer),
     'decode decodes something into something with length': () => ok(decode('asdasd').length),
     'decode can decode something encoded into what it once was': () => deepEqual([1, 2, 3, 4], decode(encode([1, 2, 3, 4]))),
-    'encode can decode something that was once encoded': () => () => equal('theanswer+42', encode(decode(encode('theanswer+42')))),
+    'encode can decode something that was once encoded': () => equal('theanswer-42', encode(decode(encode('theanswer-42')))),
 
     'hash hashes an object': () => ok(hash({ a: 1 })),
     'hash hashes an empty object': () => ok(hash({})),

@@ -1,3 +1,5 @@
 node_modules/
 /db.json
 /*.log
+/coverage/
+/.nyc_output/

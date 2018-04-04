@@ -19,7 +19,8 @@ const {
     validate_split,
     validate_transaction,
     buffer_less_than,
-    validate_block } = require('../validation');
+    validate_block,
+    is_block_solution_under_target } = require('../validation');
 
 const k = [generate_key(), generate_key(), generate_key()].map(encode);
 const p = k.map(get_public_key_from_private_key).map(encode);
@@ -178,5 +179,10 @@ module.exports = {
     'validate_block passes valid block 1': () => equal(0, validate_block(block0)),
     'validate_block passes valid block 2': () => equal(0, validate_block(block1)),
     'validate_block passes valid block 3': () => equal(0, validate_block(block2)),
-    'validate_block checks transactions': () => contains(validate_block(sign({ transactions: [{ invalid: true }], compliment: encode(generate_nonce()), height: 2, parent: block1.hash }, k[1], true)), "There were problems with one or more transactions")
+    'validate_block checks transactions': () => contains(validate_block(sign({ transactions: [{ invalid: true }], compliment: encode(generate_nonce()), height: 2, parent: block1.hash }, k[1], true)), "There were problems with one or more transactions"),
+
+    'is_block_solution_under_target true if block solution is valid': () => ok(is_block_solution_under_target({ compliment: 'fytXW9IZbMDkIMfZGs1aNWEVt4EXBnsiTwEFBDQx8Cw', hash: 'i7BrIRIbPDAcTai7jFl0Hn6gAVX-sf5POMnXF4-3vak' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
+    'is_block_solution_under_target true if block solution is valid (harder)': () => ok(is_block_solution_under_target({ compliment: 'tgP1O8_oAKAsRWnmiPXBo2JemPgEl0T7c96Bsg_MpDs', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAAAKvMdxGEYc78_cINKza6fD09TT11gWFpfHBo87Rs')),
+    'is_block_solution_under_target true if block solution is valid (easier target but harder solution)': () => ok(is_block_solution_under_target({ compliment: 'tgP1O8_oAKAsRWnmiPXBo2JemPgEl0T7c96Bsg_MpDs', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
+    'is_block_solution_under_target false if block solution is not valid': () => ok(!is_block_solution_under_target({ compliment: 'wBKCxz4HyF9xcEI5tO4_urn7e_Sz27UbV091CxLC2z8', hash: 'i7BrIRIbPDAcTai7jFl0Hn6gAVX-sf5POMnXF4-3vak' }, 'AAAAAG3zf2de9urfWrmiBy1EJo2X34N-Z0iVblxsIRc')),
 }

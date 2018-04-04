@@ -73,7 +73,7 @@ const
 
 module.exports = {
     'is_valid_base64 valid for valid base64': () => ok(is_valid_base64('blahdiblah')),
-    'is_valid_base64 not valid for invalid base64': () => ok(!is_valid_base64('%(*^$^')),
+    'is_valid_base64 not valid for invalid base64': () => ok(!is_valid_base64('#&#^$7')),
     'is_valid_public_key valid': () => ok(is_valid_public_key('AmidWK-6LWDvH0ljhWZ7_Qzw3533OkUs_Uz9_IQjocbb')),
     'is_valid_public_key not valid length != 44': () => ok(!is_valid_public_key('A')),
     'is_valid_public_key not valid not starts with A': () => ok(!is_valid_public_key('BmidWK-6LWDvH0ljhWZ7_Qzw3533OkUs_Uz9_IQjocbb')),

@@ -12,7 +12,7 @@ const max_private_key = Buffer.from('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF4
  * @returns {boolean} true or false.
  */
 const is_valid_base64 = (s) => {
-    return typeof s == "string" && (s == "" || /[-a-zA-Z0-9_+/]/.test(s));
+    return typeof s == "string" && (s == "" || /^[-a-zA-Z0-9_+/]+$/.test(s));
 }
 
 /**

@@ -6,6 +6,8 @@ const {
     hash } = require('./utils');
 const { validate_block, validate_transaction, validate_split } = require('./validation');
 
+const TARGET = decode(require('./configuration').TARGET);
+
 const validate_throw = (wut, validate, message) => {
     const errors = validate(wut);
     if (errors.length) {

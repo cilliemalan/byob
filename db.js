@@ -1,21 +1,14 @@
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const { chmodSync } = require('fs');
-const { resolve: resolvePath } = require('path');
 
-const { BLOCK_REWARD } = require('./constants');
+const { KEYS_FILE, DB_FILE, BLOCK_REWARD } = require('./configuration');
 const { get_public_key_from_private_key, encode, abbreviate, sign } = require('./utils');
 
-// files from env
-const keys_file = resolvePath(process.env.BYOB_KEYS_FILE ||
-    resolvePath(process.env.USERPROFILE || process.env.HOME, '.byobkeys.json'));
-const db_file = resolvePath(process.env.BYOB_DB_FILE ||
-    resolvePath(process.cwd(), 'db.json'));
-
 // create/load dbs
-const keys_db = low(new FileSync(keys_file));
-chmodSync(keys_file, 0o600);
-const db = low(new FileSync(db_file));
+const keys_db = low(new FileSync(KEYS_FILE));
+chmodSync(KEYS_FILE, 0o600);
+const db = low(new FileSync(DB_FILE));
 keys_db.defaults({ keys: {} }).write();
 db.defaults({ blocks: {} }).write();
 

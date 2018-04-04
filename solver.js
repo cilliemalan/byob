@@ -3,6 +3,8 @@ const { spawn } = require('child_process');
 const { resolve: resolvePath } = require('path');
 const EventEmitter = require('events');
 
+const { TARGET } = require('./configuration');
+
 const node = process.argv0;
 const worker = resolvePath(__dirname, 'solver.worker.js');
 let running_process;
@@ -81,10 +83,11 @@ const updateProblem = (hash, target) => {
  * a previous problem is still in the process of being solved, that problem solving
  * process will be cancelled and the previously returned promise will never resolve.
  * @param {Buffer} hash The hash part of the problem
- * @param {Buffer} target The target under which the solution should be
+ * @param {Buffer} target The target under which the solution should be. Defaults to the
+ * target set in configuration.
  * @returns {Promise<Buffer>} the solution to the problem
  */
-const solve = (hash, target) => {
+const solve = (hash, target = TARGET) => {
     if (typeof hash == "string") hash = decode(hash);
     if (typeof target == "string") target = decode(target);
 

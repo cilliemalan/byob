@@ -6,6 +6,8 @@ const { createHash } = require('crypto');
 
 const max_private_key = Buffer.from('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140', 'hex');
 
+const { TARGET } = require('./configuration');
+
 /**
  * Checks if a string is valid base64.
  * @param {*} s the string to check.
@@ -235,9 +237,10 @@ const buffer_less_than = (a, b) => {
 /**
  * Checks if the block compliment and hash solve the PoW problem.
  * @param {Object} block The block to validate
- * @param {Buffer|string} target The target for the solution
+ * @param {Buffer|string} target The target for the solution. Defaults to the target from
+ * config.
  */
-const is_block_solution_under_target = (block, target) => {
+const is_block_solution_under_target = (block, target = TARGET) => {
     if (typeof target == "string") target = decode(target);
     const { compliment, hash } = block;
 

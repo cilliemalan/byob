@@ -7,6 +7,7 @@ const keys_file = `${__dirname}/_test_keys.json`,
 
 process.env.BYOB_KEYS_FILE = keys_file;
 process.env.BYOB_DB_FILE = db_file;
+process.env.BYOB_TARGET = 'AEGJN0vGp--dsi0OVgQYk3S8an752yLQ5WBBiTdLxqc';
 
 if (existsSync(keys_file)) unlinkSync(keys_file);
 if (existsSync(db_file)) unlinkSync(db_file);

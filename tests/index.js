@@ -1,8 +1,18 @@
-const fs = require('fs');
-const path = require('path');
+const { unlinkSync, existsSync, readdirSync } = require('fs');
 const _ = require('lodash');
 
-const files = fs.readdirSync(__dirname);
+//prepare for db tests
+const keys_file = `${__dirname}/_test_keys.json`,
+    db_file = `${__dirname}/_test_db.json`;
+
+process.env.BYOB_KEYS_FILE = keys_file;
+process.env.BYOB_DB_FILE = db_file;
+
+if (existsSync(keys_file)) unlinkSync(keys_file);
+if (existsSync(db_file)) unlinkSync(db_file);
+
+const files = readdirSync(__dirname);
+
 
 function execute(fn) {
     try {

@@ -1,12 +1,57 @@
 const { decode, encode } = require('./utils');
-const { fork } = require('child_process');
+const { spawn } = require('child_process');
 const { resolve: resolvePath } = require('path');
+const EventEmitter = require('events');
 
 const node = process.argv0;
 const worker = resolvePath(__dirname, 'solver.worker.js');
-let running_process = fork(worker);
+let running_process;
+const messages = new EventEmitter();
+let send_message;
+
+const start_worker = () => {
+    if (running_process && !running_process.killed) {
+        running_process.kill();
+    }
+    running_process = null;
+
+    running_process = spawn(node, [worker, '-q'], {
+        stdio: ['pipe', 'pipe', process.stderr]
+    });
+
+    running_process.stdout.on('data', (data) => {
+        let msg;
+        try {
+            msg = JSON.parse(data);
+        } catch (e) { }
+
+        if (msg) {
+            messages.emit('message', msg);
+        }
+    });
+
+    running_process.on('exit', () => {
+        running_process = null;
+    });
+
+    process.once('exit', () => {
+        if (running_process && !running_process.killed) {
+            running_process.kill();
+            running_process = null;
+        }
+    });
+
+    send_message = (msg) => {
+        running_process.stdin.write(JSON.stringify(msg));
+        running_process.stdin.write('\n');
+    }
+}
+
 
 const updateProblem = (hash, target) => {
+    if (!running_process) {
+        start_worker();
+    }
 
     return new Promise((resolve, reject) => {
 
@@ -17,11 +62,16 @@ const updateProblem = (hash, target) => {
 
             if (bhash.equals(hash) && btarget.equals(target)) {
                 resolve(bcomp);
+                remove_onmessage();
             }
         }
 
-        running_process.once('message', onmessage);
-        running_process.send({ hash: encode(hash), target: encode(target) });
+        const remove_onmessage = () => {
+            messages.removeListener('message', onmessage);
+        }
+
+        messages.on('message', onmessage);
+        send_message({ hash: encode(hash), target: encode(target) });
     });
 }
 

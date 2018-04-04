@@ -22,14 +22,24 @@ const start_worker = () => {
     });
 
     running_process.stdout.on('data', (data) => {
-        let msg;
-        try {
-            msg = JSON.parse(data);
-        } catch (e) { }
 
-        if (msg) {
-            messages.emit('message', msg);
-        }
+        const sdata = data.toString().split(/\r?\n/);
+
+        sdata.forEach(line => {
+            let msg;
+            if (line && line.trim()) {
+                try {
+                    msg = JSON.parse(line);
+                } catch (e) {
+                    console.log(line);
+                }
+
+                if (msg) {
+                    messages.emit('message', msg);
+                }
+            }
+        });
+
     });
 
     running_process.on('exit', () => {

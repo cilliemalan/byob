@@ -1,4 +1,4 @@
-const { ok, equal, notEqual, deepEqual } = require('assert');
+const { ok, equal, notEqual, deepEqual, throws } = require('assert');
 
 const contains = (a, b) => ok(a.filter(x => x == b).length);
 const notContains = (a, b) => ok(!a.filter(x => x == b).length);
@@ -80,11 +80,13 @@ module.exports = {
     'is_valid_public_key not valid not base64': () => ok(!is_valid_public_key('BmidWK#6LWDvH0ljhWZ7_Qzw3533OkUs_Uz9_IQjocbb')),
     'is_valid_public_key valid buffer': () => ok(is_valid_public_key(Buffer.from('AmidWK-6LWDvH0ljhWZ7_Qzw3533OkUs_Uz9_IQjocbb', 'base64'))),
     'is_valid_public_key not valid length wrong': () => ok(!is_valid_public_key(Buffer.from('AmidWK6LWDvH0ljhWZ7_Qzw3533OkUs_Uz9_IQjocbb', 'base64'))),
+    'is_valid_public_key not valid when not string or buffer': () => ok(!is_valid_public_key([1, 2, 3])),
 
     'is_valid_hash valid': () => ok(is_valid_private_key('2o_57mhaLjzkp4Pnr0xk_JCb7-Ehs3NzN73gjohOr2s')),
     'is_valid_hash not valid for invalid base64': () => ok(!is_valid_private_key('2o#57mhaLjzkp4Pnr0xk_JCb7-Ehs3NzN73gjohOr2s')),
     'is_valid_hash not valid for bad length': () => ok(!is_valid_private_key('2o_57mhaLjzkp4Pnr0xk_JCb7-Ehs3NzN73gjo')),
     'is_valid_hash valid for buffer': () => ok(is_valid_private_key(Buffer.from('2o_57mhaLjzkp4Pnr0xk_JCb7-Ehs3NzN73gjohOr2s', 'base64'))),
+    'is_valid_hash not valid when not string or buffer': () => ok(!is_valid_hash([1, 2, 3])),
 
     'is_valid_private_key valid': () => ok(is_valid_private_key('2o_57mhaLjzkp4Pnr0xk_JCb7-Ehs3NzN73gjohOr2s')),
     'is_valid_private_key not valid for invalid base64': () => ok(!is_valid_private_key('2o#57mhaLjzkp4Pnr0xk_JCb7-Ehs3NzN73gjohOr2s')),
@@ -136,6 +138,8 @@ module.exports = {
     'buffer_less_than is true if a equals b for multiple bytes': () => ok(buffer_less_than(Buffer.from([2, 0, 0]), Buffer.from([2, 0, 0]))),
     'buffer_less_than is false if a is more than b for multiple bytes': () => ok(!buffer_less_than(Buffer.from([2, 0, 0]), Buffer.from([1, 0, 0]))),
     'buffer_less_than is false if a is more than b for multiple bytes even if really close': () => ok(!buffer_less_than(Buffer.from([1, 0, 1]), Buffer.from([1, 0, 0]))),
+    'buffer_less_than supports base64 encoded strings': () => ok(buffer_less_than(encode(Buffer.from([1, 0, 0])), encode(Buffer.from([2, 0, 0])))),
+    'buffer_less_than throws when lengths not equal': () => throws(() => buffer_less_than(Buffer.from([1, 0, 1]), Buffer.from([1, 0, 0, 1])), /^both hash and target must have the same length$/),
 
     'validate_block needs transactions array': () => contains(validate_block({}), "The block does not have a transactions array"),
     'validate_block passes transactions array': () => notContains(validate_block({ transactions: [] }), "The block does not have a transactions array"),
@@ -164,8 +168,9 @@ module.exports = {
     'validate_block passes no parent when == 0': () => notContains(validate_block({ height: 0 }), "No parent was specified but the height was not 0"),
     'validate_block passes height when parent': () => notContains(validate_block({ parent: encode(hash({})), height: 100 }), "No parent was specified but the height was not 0"),
     'validate_block needs signature': () => contains(validate_block({}), "The block is not signed"),
-    'validate_block needs one signature': () => contains(validate_block(sign({}, k)), "The block is not signed"),
-    'validate_block passes one signature': () => notContains(validate_block(sign({}, k[0])), "The block is not signed"),
+    'validate_block needs only one signature': () => contains(validate_block(sign({}, k)), "The block is not signed"),
+    'validate_block passes exactly one signature': () => notContains(validate_block(sign({}, k[0])), "The block is not signed"),
+    'validate_block needs signature valid base64': () => contains(validate_block({ signature: '#&#^$7' }), "The block signature was not a valid base64 string"),
     'validate_block needs correct signature': () => contains(validate_block(sign({ author: p[1] }, k[0])), "The block signature is not valid"),
     'validate_block passes correct signature': () => notContains(validate_block(sign({ author: p[1] }, k[1])), "The block signature is not valid"),
     'validate_block rejects extra props': () => contains(validate_block({ notvalid1: 'a', notvalid2: 5 }), "The block contained extra unsupported properties: notvalid1, notvalid2"),

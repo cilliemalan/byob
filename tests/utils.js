@@ -65,5 +65,6 @@ module.exports = {
     'generate_nonce generates a nonce that is the length of the arg': () => equal(5, generate_nonce(5).length),
     'generate_nonce generates unique nonces': () => bnotEqual(generate_nonce(), generate_nonce()),
 
-    'xor_buffers generates an XOR of two buffers': () => equal(encode(xor_buffers(Buffer.from([1, 2, 3]), Buffer.from([5, 6, 7]))), encode(Buffer.from([1 ^ 5, 2 ^ 6, 3 ^ 7])))
+    'xor_buffers generates an XOR of two buffers': () => equal(encode(xor_buffers(Buffer.from([1, 2, 3]), Buffer.from([5, 6, 7]))), encode(Buffer.from([1 ^ 5, 2 ^ 6, 3 ^ 7]))),
+    'xor_buffers generates an XOR of two buffers if encoded': () => equal(encode(xor_buffers(encode(Buffer.from([1, 2, 3])), encode(Buffer.from([5, 6, 7])))), encode(Buffer.from([1 ^ 5, 2 ^ 6, 3 ^ 7]))),
 };

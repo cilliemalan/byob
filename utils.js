@@ -219,6 +219,8 @@ const generate_nonce = (length = 32) => randomBytes(length);
  * @returns a new buffer containing a ^ b.
  */
 const xor_buffers = (a, b) => {
+    if (typeof a == "string") a = decode(a);
+    if (typeof b == "string") b = decode(b);
 
     const l = a.length;
     if(l != b.length) {

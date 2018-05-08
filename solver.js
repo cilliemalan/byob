@@ -59,8 +59,13 @@ const start_worker = () => {
     }
 }
 
+const update_problem = (hash, target) => {
+    if (typeof hash !== "string") hash = encode(hash);
+    if (typeof target !== "string") target = encode(target);
+    send_message({ hash, target });
+}
 
-const updateProblem = (hash, target) => {
+const new_problem = (hash, target) => {
     if (!running_process) {
         start_worker();
     }
@@ -72,9 +77,9 @@ const updateProblem = (hash, target) => {
             const bcomp = decode(m.compliment);
             const btarget = decode(m.target);
 
-            if (bhash.equals(hash) && btarget.equals(target)) {
-                resolve(bcomp);
+            if (bhash && bcomp && btarget) {
                 remove_onmessage();
+                resolve({ hash: bhash, compliment: bcomp, target: btarget });
             }
         }
 
@@ -83,25 +88,36 @@ const updateProblem = (hash, target) => {
         }
 
         messages.on('message', onmessage);
-        send_message({ hash: encode(hash), target: encode(target) });
+        update_problem(hash, target);
     });
 }
-
 
 /**
  * Finds a compliment such that hash ^ compliment < target. Note: if this is called while
  * a previous problem is still in the process of being solved, that problem solving
- * process will be cancelled and the previously returned promise will never resolve.
+ * process will NOT be cancelled and the previously returned promise will resolve when
+ * THIS problem finishes.
  * @param {Buffer} hash The hash part of the problem
  * @param {Buffer} target The target under which the solution should be. Defaults to the
  * target set in configuration.
  * @returns {Promise<Buffer>} the solution to the problem
  */
-const solve = (hash, target = TARGET) => {
+const solve = async (hash, target = TARGET) => {
     if (typeof hash == "string") hash = decode(hash);
     if (typeof target == "string") target = decode(target);
 
-    return updateProblem(hash, target);
+    const result = await new_problem(hash, target);
+    return result.compliment;
+}
+
+/**
+ * Updates the hash of the currently running problem. The promise returned by
+ * the previous call to solve will only resolve after THIS hash's compliment is
+ * found.
+ * @param {string|Buffer} new_hash the new hash to find a compliment for
+ */
+const update_hash = (new_hash) => {
+    update_problem(new_hash);
 }
 
 module.exports = {

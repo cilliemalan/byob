@@ -1,4 +1,7 @@
-const { encode, hash, decode, verify, verify_sig, abbreviate } = require('./utils');
+const { encode, hash, 
+    decode, verify, verify_sig, 
+    abbreviate, xor_buffers, 
+    buffer_less_than } = require('./utils');
 const _ = require('lodash');
 const { isArray } = _;
 const { createHash } = require('crypto');
@@ -213,28 +216,6 @@ const validate_block = (block) => {
 }
 
 /**
- * Checks that the bytes from one buffer is less than the bytes from another.
- * @param {Buffer|string} a The one buffer. Returns true if this one is smaller or equal.
- * @param {Buffer|string} b The other buffer. Returns false if this one is smaller.
- */
-const buffer_less_than = (a, b) => {
-    if (typeof a == "string") a = decode(a);
-    if (typeof b == "string") b = decode(b);
-
-    if (a.length != b.length) {
-        throw "both hash and target must have the same length";
-    }
-
-    const l = a.length;
-    for (let i = 0; i < l; ++i) {
-        if (a[i] > b[i]) return false;
-        if (a[i] < b[i]) return true;
-    }
-
-    return true;
-}
-
-/**
  * Checks if the block compliment and hash solve the PoW problem.
  * @param {Object} block The block to validate
  * @param {Buffer|string} target The target for the solution. Defaults to the target from
@@ -258,6 +239,5 @@ module.exports = {
     validate_split,
     validate_transaction,
     validate_block,
-    buffer_less_than,
     is_block_solution_under_target
 };

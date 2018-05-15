@@ -1,10 +1,10 @@
-const { ok, equal, notEqual, deepEqual } = require('assert');
+const { ok, equal, notEqual, deepEqual, throws } = require('assert');
 
 const { encode, decode, hash, sign_hash, sign,
     verify_sig, verify,
     generate_key, get_public_key_from_private_key,
     abbreviate, calculate_target, generate_nonce,
-    xor_buffers } = require('../utils');
+    xor_buffers, buffer_less_than } = require('../utils');
 
 const bequal = (a, b) => equal(a.toString(), b.toString());
 const bnotEqual = (a, b) => notEqual(a.toString(), b.toString());
@@ -67,4 +67,15 @@ module.exports = {
 
     'xor_buffers generates an XOR of two buffers': () => equal(encode(xor_buffers(Buffer.from([1, 2, 3]), Buffer.from([5, 6, 7]))), encode(Buffer.from([1 ^ 5, 2 ^ 6, 3 ^ 7]))),
     'xor_buffers generates an XOR of two buffers if encoded': () => equal(encode(xor_buffers(encode(Buffer.from([1, 2, 3])), encode(Buffer.from([5, 6, 7])))), encode(Buffer.from([1 ^ 5, 2 ^ 6, 3 ^ 7]))),
+    
+    'buffer_less_than is true if a is less than b': () => ok(buffer_less_than(Buffer.from([1]), Buffer.from([2]))),
+    'buffer_less_than is true if a equals b': () => ok(buffer_less_than(Buffer.from([2]), Buffer.from([2]))),
+    'buffer_less_than is false if a is more than b': () => ok(!buffer_less_than(Buffer.from([2]), Buffer.from([1]))),
+    'buffer_less_than is true if a is less than b for multiple bytes': () => ok(buffer_less_than(Buffer.from([1, 0, 0]), Buffer.from([2, 0, 0]))),
+    'buffer_less_than is true if a is less than b for multiple bytes even if really close': () => ok(buffer_less_than(Buffer.from([1, 0, 0]), Buffer.from([1, 0, 1]))),
+    'buffer_less_than is true if a equals b for multiple bytes': () => ok(buffer_less_than(Buffer.from([2, 0, 0]), Buffer.from([2, 0, 0]))),
+    'buffer_less_than is false if a is more than b for multiple bytes': () => ok(!buffer_less_than(Buffer.from([2, 0, 0]), Buffer.from([1, 0, 0]))),
+    'buffer_less_than is false if a is more than b for multiple bytes even if really close': () => ok(!buffer_less_than(Buffer.from([1, 0, 1]), Buffer.from([1, 0, 0]))),
+    'buffer_less_than supports base64 encoded strings': () => ok(buffer_less_than(encode(Buffer.from([1, 0, 0])), encode(Buffer.from([2, 0, 0])))),
+    'buffer_less_than throws when lengths not equal': () => throws(() => buffer_less_than(Buffer.from([1, 0, 1]), Buffer.from([1, 0, 0, 1])), /^both hash and target must have the same length$/),
 };

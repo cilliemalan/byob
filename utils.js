@@ -235,6 +235,28 @@ const xor_buffers = (a, b) => {
     return c;
 }
 
+/**
+ * Checks that the bytes from one buffer is less than the bytes from another.
+ * @param {Buffer|string} a The one buffer. Returns true if this one is smaller or equal.
+ * @param {Buffer|string} b The other buffer. Returns false if this one is smaller.
+ */
+const buffer_less_than = (a, b) => {
+    if (typeof a == "string") a = decode(a);
+    if (typeof b == "string") b = decode(b);
+
+    if (a.length != b.length) {
+        throw "both hash and target must have the same length";
+    }
+
+    const l = a.length;
+    for (let i = 0; i < l; ++i) {
+        if (a[i] > b[i]) return false;
+        if (a[i] < b[i]) return true;
+    }
+
+    return true;
+}
+
 module.exports = {
     encode,
     decode,
@@ -248,5 +270,6 @@ module.exports = {
     abbreviate,
     calculate_target,
     generate_nonce,
-    xor_buffers
+    xor_buffers,
+    buffer_less_than
 };

@@ -18,7 +18,6 @@ const {
     is_valid_hash,
     validate_split,
     validate_transaction,
-    buffer_less_than,
     validate_block,
     is_block_solution_under_target } = require('../validation');
 
@@ -130,17 +129,6 @@ module.exports = {
     'validate_transaction passes a valid transaction 1': () => ok(validate_transaction(transaction1).length == 0),
     'validate_transaction passes a valid transaction 2': () => ok(validate_transaction(transaction2).length == 0),
     'validate_transaction passes a valid transaction 3': () => ok(validate_transaction(transaction3).length == 0),
-
-    'buffer_less_than is true if a is less than b': () => ok(buffer_less_than(Buffer.from([1]), Buffer.from([2]))),
-    'buffer_less_than is true if a equals b': () => ok(buffer_less_than(Buffer.from([2]), Buffer.from([2]))),
-    'buffer_less_than is false if a is more than b': () => ok(!buffer_less_than(Buffer.from([2]), Buffer.from([1]))),
-    'buffer_less_than is true if a is less than b for multiple bytes': () => ok(buffer_less_than(Buffer.from([1, 0, 0]), Buffer.from([2, 0, 0]))),
-    'buffer_less_than is true if a is less than b for multiple bytes even if really close': () => ok(buffer_less_than(Buffer.from([1, 0, 0]), Buffer.from([1, 0, 1]))),
-    'buffer_less_than is true if a equals b for multiple bytes': () => ok(buffer_less_than(Buffer.from([2, 0, 0]), Buffer.from([2, 0, 0]))),
-    'buffer_less_than is false if a is more than b for multiple bytes': () => ok(!buffer_less_than(Buffer.from([2, 0, 0]), Buffer.from([1, 0, 0]))),
-    'buffer_less_than is false if a is more than b for multiple bytes even if really close': () => ok(!buffer_less_than(Buffer.from([1, 0, 1]), Buffer.from([1, 0, 0]))),
-    'buffer_less_than supports base64 encoded strings': () => ok(buffer_less_than(encode(Buffer.from([1, 0, 0])), encode(Buffer.from([2, 0, 0])))),
-    'buffer_less_than throws when lengths not equal': () => throws(() => buffer_less_than(Buffer.from([1, 0, 1]), Buffer.from([1, 0, 0, 1])), /^both hash and target must have the same length$/),
 
     'validate_block needs transactions array': () => contains(validate_block({}), "The block does not have a transactions array"),
     'validate_block passes transactions array': () => notContains(validate_block({ transactions: [] }), "The block does not have a transactions array"),

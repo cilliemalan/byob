@@ -1,5 +1,4 @@
-const { encode, decode, xor_buffers } = require('./utils');
-const { buffer_less_than } = require('./validation');
+const { encode, decode, xor_buffers, buffer_less_than } = require('./utils');
 const { randomBytes, createHash } = require('crypto');
 
 const { stdin, stdout } = process;

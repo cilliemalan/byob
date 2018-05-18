@@ -1,7 +1,9 @@
 const { ok, equal, notEqual, deepEqual, throws } = require('assert');
 const { isArray, isFunction } = require('util');
 
-const { get_signer, add_key, get_keys } = require('../db');
+const { get_signer, add_key, get_keys, 
+    get_block_by_hash, get_highest_block, 
+    store_block } = require('../db');
 const { validate_block, is_block_solution_under_target } = require('../validation');
 const {
     generate_key,
@@ -13,6 +15,7 @@ const {
     hash_block
 } = require('../blockchain');
 const { solve } = require('../solver');
+const { BLOCK_REWARD } = require('../configuration');
 
 
 const k = [
@@ -155,5 +158,27 @@ module.exports = {
         test_blocks.push(signed2);
         test_blocks.push(signed3);
         test_blocks.push(signed4);
-    }
+    },
+    'store_block will store the initial block': () => store_block(test_blocks[0]),
+    'get_block_by_hash retrieves the initial block': () => ok(get_block_by_hash(test_blocks[0].hash)),
+    'get_block_by_hash retrieves the initial block and it has the same hash': () => equal(test_blocks[0].hash, get_block_by_hash(test_blocks[0].hash).hash),
+    'get_highest_block retrieves the first block': () => equal(test_blocks[0].hash, get_highest_block().hash),
+    'store_block stores the initial block, and it has running balances': () => ok(get_block_by_hash(test_blocks[0].hash).balances),
+    'store_block stores the initial block, and it has accounts': () => ok(get_block_by_hash(test_blocks[0].hash).accounts),
+    'store_block stores the author\'s block reward as a balance (1st)': () => equal(BLOCK_REWARD, get_block_by_hash(test_blocks[0].hash).balances[test_blocks[0].author]),
+    'store_block stores the author\'s block reward as an account (1st)': () => equal(BLOCK_REWARD, get_block_by_hash(test_blocks[0].hash).accounts[test_blocks[0].author]),
+    'store_block stores only one balance in the first block': () => equal(1, Object.keys(get_block_by_hash(test_blocks[0].hash).balances).length),
+    'store_block stores only one account in the first block': () => equal(1, Object.keys(get_block_by_hash(test_blocks[0].hash).accounts).length),
+    'store_block will store the second block': () => store_block(test_blocks[1]),
+    'get_block_by_hash retrieves the second block': () => ok(get_block_by_hash(test_blocks[1].hash)),
+    'get_highest_block retrieves the second block': () => equal(test_blocks[1].hash, get_highest_block().hash),
+    'store_block will store the third block': () => store_block(test_blocks[2]),
+    'get_block_by_hash retrieves the third block': () => ok(get_block_by_hash(test_blocks[2].hash)),
+    'get_highest_block retrieves the third block': () => equal(test_blocks[2].hash, get_highest_block().hash),
+    'store_block will store the fourth block': () => store_block(test_blocks[3]),
+    'get_block_by_hash retrieves the fourth block': () => ok(get_block_by_hash(test_blocks[3].hash)),
+    'get_highest_block retrieves the fourth block': () => equal(test_blocks[3].hash, get_highest_block().hash),
+    'store_block will store the fifth block': () => store_block(test_blocks[4]),
+    'get_block_by_hash retrieves the fifth block': () => ok(get_block_by_hash(test_blocks[4].hash)),
+    'get_highest_block retrieves the fifth block': () => equal(test_blocks[4].hash, get_highest_block().hash)
 }

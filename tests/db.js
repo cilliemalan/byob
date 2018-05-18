@@ -1,8 +1,8 @@
 const { ok, equal, notEqual, deepEqual, throws } = require('assert');
 const { isArray, isFunction } = require('util');
 
-const { get_signer, add_key, get_keys, 
-    get_block_by_hash, get_highest_block, 
+const { get_signer, add_key, get_keys,
+    get_block_by_hash, get_highest_block,
     store_block } = require('../db');
 const { validate_block, is_block_solution_under_target } = require('../validation');
 const {
@@ -24,6 +24,19 @@ const k = [
 const p = k.map(get_public_key_from_private_key).map(encode);
 
 const test_blocks = [];
+const validate_and_load_test_blocks = (...blocks) => {
+
+    const errors = [];
+    const adderror = e => errors.push(e);
+
+    blocks.forEach(block => validate_block(block).forEach(adderror));
+    errors.forEach(e => console.log(e));
+
+    equal(0, errors.length);
+    blocks.forEach(block => ok(is_block_solution_under_target(block)));
+
+    blocks.forEach(block => test_blocks.push(block));
+}
 
 module.exports = {
     'get_keys initially returns an array': () => ok(isArray(get_keys())),
@@ -136,28 +149,7 @@ module.exports = {
             signed3 = sign(solved3, k[0]),
             signed4 = sign(solved4, k[1]);
 
-        const errors = [];
-        const adderror = e => errors.push(e);
-
-        validate_block(signed0).forEach(adderror);
-        validate_block(signed1).forEach(adderror);
-        validate_block(signed2).forEach(adderror);
-        validate_block(signed3).forEach(adderror);
-        validate_block(signed4).forEach(adderror);
-        errors.forEach(e => console.log(e));
-
-        equal(0, errors.length);
-        ok(is_block_solution_under_target(signed0));
-        ok(is_block_solution_under_target(signed1));
-        ok(is_block_solution_under_target(signed2));
-        ok(is_block_solution_under_target(signed3));
-        ok(is_block_solution_under_target(signed4));
-
-        test_blocks.push(signed0);
-        test_blocks.push(signed1);
-        test_blocks.push(signed2);
-        test_blocks.push(signed3);
-        test_blocks.push(signed4);
+        validate_and_load_test_blocks(signed0, signed1, signed2, signed3, signed4);
     },
     'store_block will store the initial block': () => store_block(test_blocks[0]),
     'get_block_by_hash retrieves the initial block': () => ok(get_block_by_hash(test_blocks[0].hash)),
@@ -180,5 +172,56 @@ module.exports = {
     'get_highest_block retrieves the fourth block': () => equal(test_blocks[3].hash, get_highest_block().hash),
     'store_block will store the fifth block': () => store_block(test_blocks[4]),
     'get_block_by_hash retrieves the fifth block': () => ok(get_block_by_hash(test_blocks[4].hash)),
-    'get_highest_block retrieves the fifth block': () => equal(test_blocks[4].hash, get_highest_block().hash)
+    'get_highest_block retrieves the fifth block': () => equal(test_blocks[4].hash, get_highest_block().hash),
+    'can add a new block at height 3': async () => {
+        const
+            unsolved5 = hash_block({
+                transactions: [],
+                height: 3,
+                author: p[3],
+                parent: test_blocks[2].hash,
+            }),
+            solved5 = {
+                compliment: encode(await solve(unsolved5.hash)),
+                ...unsolved5
+            },
+            signed5 = sign(solved5, k[3]);
+
+        validate_and_load_test_blocks(signed5);
+    },
+    'store_block will store the sixth block': () => store_block(test_blocks[5]),
+    'get_block_by_hash retrieves the sixth block': () => ok(get_block_by_hash(test_blocks[5].hash)),
+    'get_highest_block still retrieves the fifth block': () => equal(test_blocks[4].hash, get_highest_block().hash),
+    'can add a new block at height 4 and 5': async () => {
+        const
+            unsolved6 = hash_block({
+                transactions: [],
+                height: 4,
+                author: p[3],
+                parent: test_blocks[5].hash,
+            }),
+            unsolved7 = hash_block({
+                transactions: [],
+                height: 5,
+                author: p[3],
+                parent: unsolved6.hash,
+            }),
+            solved6 = {
+                compliment: encode(await solve(unsolved6.hash)),
+                ...unsolved6
+            },
+            solved7 = {
+                compliment: encode(await solve(unsolved7.hash)),
+                ...unsolved7
+            },
+            signed6 = sign(solved6, k[3]),
+            signed7 = sign(solved7, k[3]);
+
+        validate_and_load_test_blocks(signed6, signed7);
+    },
+    'store_block will store the seventh block': () => store_block(test_blocks[6]),
+    'store_block will store the eighth block': () => store_block(test_blocks[7]),
+    'get_block_by_hash retrieves the seventh block': () => ok(get_block_by_hash(test_blocks[6].hash)),
+    'get_block_by_hash retrieves the eighth block': () => ok(get_block_by_hash(test_blocks[7].hash)),
+    'get_highest_block now retrieves the eighth block': () => equal(test_blocks[7].hash, get_highest_block().hash),
 }

@@ -224,4 +224,8 @@ module.exports = {
     'get_block_by_hash retrieves the seventh block': () => ok(get_block_by_hash(test_blocks[6].hash)),
     'get_block_by_hash retrieves the eighth block': () => ok(get_block_by_hash(test_blocks[7].hash)),
     'get_highest_block now retrieves the eighth block': () => equal(test_blocks[7].hash, get_highest_block().hash),
+
+    'store_block fails if nonzero height with no parent': () => throws(() => store_block({ ...test_blocks[0], height: 4 })),
+    'store_block fails if parent does not exist': () => throws(() => store_block({ ...test_blocks[2], parent: 'blahblahblah' })),
+    'store_block fails if height is invalid': () => throws(() => store_block({ ...test_blocks[2], height: 99 })),
 }

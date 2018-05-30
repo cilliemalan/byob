@@ -5,7 +5,8 @@
   "author": "Cillié Malan <cilliemalan@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "node tests"
+    "test": "node tests",
+    "coverage": "nyc --reporter=html node tests"
   },
   "dependencies": {
     "big-integer": "^1.6.27",

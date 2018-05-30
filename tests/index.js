@@ -15,7 +15,7 @@ if (existsSync(db_file)) unlinkSync(db_file);
 const files = readdirSync(__dirname);
 
 function to_seconds(hrt) {
-    return hrt[0], hrt[1] / 1000000.0;
+    return hrt[0], hrt[1] / 100000.0;
 }
 
 function execute(fn) {

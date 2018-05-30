@@ -95,10 +95,6 @@ const store_block = (block) => {
     block_object.accounts = calculate_accounts(block_object);
 
     db.get('blocks').set(block_object.hash, block_object).write();
-
-    if (block_object.parent) {
-        db.get('blocks').get(block_object.parent).set('accounts', undefined).write();
-    }
 };
 
 /**

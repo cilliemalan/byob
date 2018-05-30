@@ -1,7 +1,11 @@
 const { ok, equal, notEqual, deepEqual, throws } = require('assert');
+const { isRegExp } = require('util');
 
-const contains = (a, b) => ok(a.filter(x => x == b).length);
-const notContains = (a, b) => ok(!a.filter(x => x == b).length);
+const contains = (a, b) => ok((isRegExp(b) ? a.filter(x => b.test(x)) : a.filter(x => x == b)).length);
+const notContains = (a, b) => ok(!(isRegExp(b) ? a.filter(x => b.test(x)) : a.filter(x => x == b)).length);
+const empty = (a) => ok(a.length == 0);
+const noInvalidTransaction = (a) => empty(a);
+const hasInvalidTransaction = (a) => contains(a, /The transaction .+, after applied yielded a negative balance on the account\(s\) .+\./);
 
 const { encode, decode, hash, sign_hash, sign,
     verify_sig, verify,

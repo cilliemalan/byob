@@ -14,25 +14,35 @@ if (existsSync(db_file)) unlinkSync(db_file);
 
 const files = readdirSync(__dirname);
 
+function to_seconds(hrt) {
+    return hrt[0], hrt[1] / 1000000.0;
+}
 
 function execute(fn) {
+    const start = process.hrtime();
     try {
         const promise = fn.apply({});
         if (promise instanceof Promise) {
             return promise.then(
-                x => true,
-                e => { console.error(e); return false; });
+                x => ({ result: true, duration: to_seconds(process.hrtime(start)) }),
+                e => { console.error(e); return ({ result: false, duration: to_seconds(process.hrtime(start)) }); });
         } else {
-            return Promise.resolve(true);
+
+            return Promise.resolve({ result: true, duration: to_seconds(process.hrtime(start)) });
         }
     } catch (e) {
         console.error(e);
-        return Promise.resolve(false);
+        return Promise.resolve({ result: false, duration: to_seconds(process.hrtime(start)) });
     }
 }
 
 let passed = 0;
 let failed = 0;
+
+const _color = (code, message) => `\x1b[0;${code}m${message}\x1b[0m`
+
+const _red = (message) => _color(31, message);
+const _green = (message) => _color(32, message);
 
 (async function () {
 
@@ -48,15 +58,17 @@ let failed = 0;
         const kvp = tests[i];
 
         const { 0: test, 1: fn } = kvp;
-        const result = await execute(fn);
-        console.log(`${test} - ${result ? '\x1b[0;32mPASS\x1b[0m' : '\x1b[0;31mFAIL\x1b[0m'}`);
+        const { result, duration } = await execute(fn);
+        const durationms = duration <= 500 ? `(${parseInt(duration)}ms)` : _red(`(${parseInt(duration)}ms)`);
+        process.stdout.write(`${test} - `);
+        process.stdout.write(`${result ? _green('PASS') : _red('FAIL')} ${durationms}\n`);
         if (!result) {
             ++failed;
         } else {
             ++passed;
         }
     }
-    
+
 })().then(() => {
 
     console.log();

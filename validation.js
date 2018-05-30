@@ -1,6 +1,6 @@
-const { encode, hash, 
-    decode, verify, verify_sig, 
-    abbreviate, xor_buffers, 
+const { encode, hash,
+    decode, verify, verify_sig,
+    abbreviate, xor_buffers,
     buffer_less_than } = require('./utils');
 const _ = require('lodash');
 const { isArray } = _;
@@ -216,6 +216,48 @@ const validate_block = (block) => {
 }
 
 /**
+ * Validates that all the given transactions can legally be applied on a given set of accounts with balances.
+ * @param {*} transactions The transactions to validate
+ * @param {*} accounts An object containing account balances
+ */
+const validate_transactions_deep = (transactions, accounts) => {
+
+    if (!transactions) {
+        return [];
+    } else {
+        const problematic_transactions = [];
+
+        const all_accounts = _(transactions)
+            .flatMap(x => x.splits)
+            .map(x => x.account)
+            .keyBy(x => x)
+            .mapValues(x => accounts[x] || 0)
+            .value();
+
+        transactions.forEach(transaction => {
+            transaction.splits.forEach(({ amount, account }) => {
+                all_accounts[account] += amount;
+            });
+
+            const negative_accounts = _(transaction.splits).map(s => s.account)
+                .uniq()
+                .map(account => ({ account, balance: all_accounts[account] }))
+                .filter(({ balance }) => balance < 0)
+                .value();
+
+            if (negative_accounts.length) {
+                problematic_transactions.push({
+                    transaction: encode(hash(transaction)),
+                    negative_accounts: negative_accounts.map(({ account }) => abbreviate(account))
+                });
+            }
+        });
+
+        return problematic_transactions.map(({ transaction, negative_accounts }) => `The transaction ${transaction}, after applied yielded a negative balance on the account(s) ${negative_accounts.join(', ')}.`);
+    }
+}
+
+/**
  * Checks if the block compliment and hash solve the PoW problem.
  * @param {Object} block The block to validate
  * @param {Buffer|string} target The target for the solution. Defaults to the target from
@@ -239,5 +281,6 @@ module.exports = {
     validate_split,
     validate_transaction,
     validate_block,
+    validate_transactions_deep,
     is_block_solution_under_target
 };

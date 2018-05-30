@@ -23,6 +23,7 @@ const {
     validate_split,
     validate_transaction,
     validate_block,
+    validate_transactions_deep,
     is_block_solution_under_target } = require('../validation');
 
 const k = [generate_key(), generate_key(), generate_key()].map(encode);
@@ -172,6 +173,19 @@ module.exports = {
     'validate_block passes valid block 2': () => equal(0, validate_block(block1)),
     'validate_block passes valid block 3': () => equal(0, validate_block(block2)),
     'validate_block checks transactions': () => contains(validate_block(sign({ transactions: [{ invalid: true }], compliment: encode(generate_nonce()), height: 2, parent: block1.hash }, k[1], true)), "There were problems with one or more transactions"),
+
+    'validate_transactions_deep passes empty input': () => noInvalidTransaction(validate_transactions_deep()),
+    'validate_transactions_deep passes valid transaction': () => noInvalidTransaction(validate_transactions_deep(
+        [{ splits: [{ account: 'a', amount: 1 }, { account: 'b', amount: -1 }] }],
+        { 'a': 10, 'b': 10 })),
+    'validate_transactions_deep fails an invalid transaction': () => hasInvalidTransaction(validate_transactions_deep(
+        [{ splits: [{ account: 'a', amount: 1 }, { account: 'b', amount: -1 }] }],
+        { 'a': 10, 'b': 0 })),
+    'validate_transactions_deep fails an transaction that is invalid because of order': () => hasInvalidTransaction(validate_transactions_deep(
+        [
+            { splits: [{ account: 'b', amount: 1 }, { account: 'a', amount: -1 }] },
+            { splits: [{ account: 'c', amount: 1 }, { account: 'a', amount: -1 }] }
+        ], { 'a': 1, 'b': 0, 'c': 0 })),
 
     'is_block_solution_under_target true if block solution is valid': () => ok(is_block_solution_under_target({ compliment: 'fytXW9IZbMDkIMfZGs1aNWEVt4EXBnsiTwEFBDQx8Cw', hash: 'i7BrIRIbPDAcTai7jFl0Hn6gAVX-sf5POMnXF4-3vak' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
     'is_block_solution_under_target true if block solution is valid (harder)': () => ok(is_block_solution_under_target({ compliment: 'tgP1O8_oAKAsRWnmiPXBo2JemPgEl0T7c96Bsg_MpDs', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAAAKvMdxGEYc78_cINKza6fD09TT11gWFpfHBo87Rs')),

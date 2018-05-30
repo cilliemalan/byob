@@ -58,9 +58,9 @@ const _green = (message) => _color(32, message);
         const kvp = tests[i];
 
         const { 0: test, 1: fn } = kvp;
+        process.stdout.write(`${test} - `);
         const { result, duration } = await execute(fn);
         const durationms = duration <= 500 ? `(${parseInt(duration)}ms)` : _red(`(${parseInt(duration)}ms)`);
-        process.stdout.write(`${test} - `);
         process.stdout.write(`${result ? _green('PASS') : _red('FAIL')} ${durationms}\n`);
         if (!result) {
             ++failed;

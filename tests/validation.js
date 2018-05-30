@@ -15,6 +15,8 @@ const { encode, decode, hash, sign_hash, sign,
 
 const { hash_block } = require('../blockchain');
 
+const { solve } = require('../solver');
+
 const {
     is_valid_base64,
     is_valid_public_key,
@@ -186,6 +188,138 @@ module.exports = {
             { splits: [{ account: 'b', amount: 1 }, { account: 'a', amount: -1 }] },
             { splits: [{ account: 'c', amount: 1 }, { account: 'a', amount: -1 }] }
         ], { 'a': 1, 'b': 0, 'c': 0 })),
+
+    'can build test blockchain 2': async () => {
+
+        // create the test chain.
+        // Note: default target is set very easy in test config.
+
+        // summary:
+        //    block0 signed by p0, no transactions
+        //    block1 signed by p1, transactions from p0(0.5)                (charge: 0.01)
+        //    block2 signed by p2, transactions from p0(0.5) and p1(1.0)    (charge: 0.02)
+        //    block3 signed by p0, transactions from p2(1.0)                (charge: 0.01)
+        //    block4 signed by p1, transactions from p0(0.5)                (charge: 0.01)
+        //    block5 signed by p2, transactions from p0(100)                (charge: 0.01, invalid)
+        //    block6 signed by p0, transactions from p0(0.5)                (charge: 0.01)
+
+        const
+            transaction1 = sign({
+                splits: [
+                    { account: p[0], amount: -0.5 },
+                    { account: p[1], amount: 0.245 },
+                    { account: p[2], amount: 0.245 }]
+            }, k[0]),
+            transaction2 = sign({
+                splits: [
+                    { account: p[0], amount: -0.5 },
+                    { account: p[1], amount: 0.245 },
+                    { account: p[2], amount: 0.245 }]
+            }, k[0]),
+            transaction3 = sign({
+                splits: [
+                    { account: p[1], amount: -1.00 },
+                    { account: p[0], amount: 0.495 },
+                    { account: p[2], amount: 0.495 }]
+            }, k[1]),
+            transaction4 = sign({
+                splits: [
+                    { account: p[2], amount: -1.00 },
+                    { account: p[0], amount: 0.495 },
+                    { account: p[1], amount: 0.495 }]
+            }, k[2]),
+            transaction5 = sign({
+                splits: [
+                    { account: p[0], amount: -0.5 },
+                    { account: p[1], amount: 0.49 }]
+            }, k[0]),
+            transaction6 = sign({
+                splits: [
+                    { account: p[0], amount: -100 },
+                    { account: p[1], amount: 0.49 }]
+            }, k[0]),
+            transaction7 = sign({
+                splits: [
+                    { account: p[0], amount: -0.5 },
+                    { account: p[1], amount: 0.49 }]
+            }, k[0]),
+            unsolved0 = hash_block({
+                transactions: [],
+                height: 0,
+                author: p[0]
+            }),
+            unsolved1 = hash_block({
+                transactions: [transaction1],
+                height: 1,
+                parent: unsolved0.hash,
+                author: p[1]
+            }),
+            unsolved2 = hash_block({
+                transactions: [transaction2, transaction3],
+                height: 2,
+                parent: unsolved1.hash,
+                author: p[2]
+            }),
+            unsolved3 = hash_block({
+                transactions: [transaction4],
+                height: 3,
+                parent: unsolved2.hash,
+                author: p[0]
+            }),
+            unsolved4 = hash_block({
+                transactions: [transaction5],
+                height: 4,
+                parent: unsolved3.hash,
+                author: p[1]
+            }),
+            unsolved5 = hash_block({
+                transactions: [transaction6],
+                height: 5,
+                parent: unsolved4.hash,
+                author: p[2]
+            }),
+            unsolved6 = hash_block({
+                transactions: [transaction7],
+                height: 5,
+                parent: unsolved4.hash,
+                author: p[0]
+            }),
+            solved0 = {
+                compliment: encode(await solve(unsolved0.hash)),
+                ...unsolved0
+            },
+            solved1 = {
+                compliment: encode(await solve(unsolved1.hash)),
+                ...unsolved1
+            },
+            solved2 = {
+                compliment: encode(await solve(unsolved2.hash)),
+                ...unsolved2
+            },
+            solved3 = {
+                compliment: encode(await solve(unsolved3.hash)),
+                ...unsolved3
+            },
+            solved4 = {
+                compliment: encode(await solve(unsolved4.hash)),
+                ...unsolved4
+            },
+            solved5 = {
+                compliment: encode(await solve(unsolved5.hash)),
+                ...unsolved5
+            },
+            solved6 = {
+                compliment: encode(await solve(unsolved5.hash)),
+                ...unsolved5
+            },
+            signed0 = sign(solved0, k[0]),
+            signed1 = sign(solved1, k[1]),
+            signed2 = sign(solved2, k[2]),
+            signed3 = sign(solved3, k[0]),
+            signed4 = sign(solved4, k[1]),
+            signed5 = sign(solved5, k[2]),
+            signed6 = sign(solved6, k[0]);
+    },
 
     'is_block_solution_under_target true if block solution is valid': () => ok(is_block_solution_under_target({ compliment: 'fytXW9IZbMDkIMfZGs1aNWEVt4EXBnsiTwEFBDQx8Cw', hash: 'i7BrIRIbPDAcTai7jFl0Hn6gAVX-sf5POMnXF4-3vak' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
     'is_block_solution_under_target true if block solution is valid (harder)': () => ok(is_block_solution_under_target({ compliment: 'tgP1O8_oAKAsRWnmiPXBo2JemPgEl0T7c96Bsg_MpDs', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAAAKvMdxGEYc78_cINKza6fD09TT11gWFpfHBo87Rs')),

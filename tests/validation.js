@@ -196,11 +196,16 @@ module.exports = {
     'validate_transactions_deep fails an invalid transaction': () => hasInvalidTransaction(validate_transactions_deep(
         [{ splits: [{ account: 'a', amount: 1 }, { account: 'b', amount: -1 }] }],
         { 'a': 10, 'b': 0 })),
-    'validate_transactions_deep fails an transaction that is invalid because of order': () => hasInvalidTransaction(validate_transactions_deep(
+    'validate_transactions_deep fails transactions that are invalid because of double spend': () => hasInvalidTransaction(validate_transactions_deep(
         [
             { splits: [{ account: 'b', amount: 1 }, { account: 'a', amount: -1 }] },
             { splits: [{ account: 'c', amount: 1 }, { account: 'a', amount: -1 }] }
         ], { 'a': 1, 'b': 0, 'c': 0 })),
+    'validate_transactions_deep passes transactions even if they fail independently': () => noInvalidTransaction(validate_transactions_deep(
+        [
+            { splits: [{ account: 'a', amount: 1 }, { account: 'b', amount: -1 }] },
+            { splits: [{ account: 'b', amount: 1 }, { account: 'a', amount: -1 }] }
+        ], { 'a': 1, 'b': 99, 'c': 0 })),
 
     'can build test blockchain 2': async () => {
 

@@ -4,7 +4,7 @@ const {
     decode,
     get_public_key_from_private_key,
     hash } = require('./utils');
-const { validate_block, validate_transaction, validate_split } = require('./validation');
+const { validate_block, validate_transaction, validate_split, validate_transactions_deep } = require('./validation');
 
 const TARGET = decode(require('./configuration').TARGET);
 
@@ -14,6 +14,26 @@ const validate_throw = (wut, validate, message) => {
         throw [message, errors.join(". ")].join(" ");
     }
 }
+
+
+/**
+ * Validates that a transaction may be included in a given pool considering given
+ * accounts. Returns a new pool of transactions if the transaction can be added
+ * or throws otherwise.
+ * @param {*} transaction The new transaction.
+ * @param {*} pool The old pool of transactions
+ * @param {*} accounts The accounts to consider when validating the transaction.
+ */
+const add_transaction_to_pool = (transaction, pool, accounts) => {
+    const new_pool = [...pool, transaction];
+    const errors = validate_transactions_deep(new_pool, accounts);
+    if(errors.length) {
+        throw errors.join(". ");
+    }
+
+    return new_pool;
+}
+
 
 /**
  * Creates a transaction split. A split represents the movement of
@@ -104,6 +124,7 @@ const hash_block = (block) => ({
 });
 
 module.exports = {
+    add_transaction_to_pool,
     create_split,
     create_transaction,
     create_block,

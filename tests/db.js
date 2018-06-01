@@ -25,16 +25,8 @@ const p = k.map(get_public_key_from_private_key).map(encode);
 
 const test_blocks = [];
 const validate_and_load_test_blocks = (...blocks) => {
-
-    const errors = [];
-    const adderror = e => errors.push(e);
-
-    blocks.forEach(block => validate_block(block).forEach(adderror));
-    errors.forEach(e => console.log(e));
-
-    equal(0, errors.length);
+    blocks.forEach(block => equal(0, validate_block(block).length));
     blocks.forEach(block => ok(is_block_solution_under_target(block)));
-
     blocks.forEach(block => test_blocks.push(block));
 }
 

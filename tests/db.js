@@ -3,7 +3,7 @@ const { isArray, isFunction } = require('util');
 
 const { get_signer, add_key, get_keys,
     get_block_by_hash, get_highest_block,
-    store_block } = require('../db');
+    store_block, store_accounts, get_accounts } = require('../db');
 const {
     validate_block,
     is_block_solution_under_target,
@@ -226,4 +226,8 @@ module.exports = {
     'store_block fails if nonzero height with no parent': () => throws(() => store_block({ ...test_blocks[0], height: 4 })),
     'store_block fails if parent does not exist': () => throws(() => store_block({ ...test_blocks[2], parent: 'blahblahblah' })),
     'store_block fails if height is invalid': () => throws(() => store_block({ ...test_blocks[2], height: 99 })),
+
+    'store_accounts will store an object': () => store_accounts('abc', { a: 1, b: 2, c: 3 }),
+    'get_accounts will retrieve an object': () => deepEqual({ a: 1, b: 2, c: 3 }, get_accounts('abc')),
+    'get_accounts will return undefined if nonexistent': () => equal(undefined, get_accounts('def'))
 }

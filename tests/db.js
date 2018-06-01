@@ -4,13 +4,17 @@ const { isArray, isFunction } = require('util');
 const { get_signer, add_key, get_keys,
     get_block_by_hash, get_highest_block,
     store_block } = require('../db');
-const { validate_block, is_block_solution_under_target } = require('../validation');
+const {
+    validate_block,
+    is_block_solution_under_target,
+    validate_block_deep } = require('../validation');
 const {
     generate_key,
     verify, encode,
     sign,
     get_public_key_from_private_key
 } = require('../utils');
+const { apply_block_transactions } = require('../accounting');
 const {
     hash_block
 } = require('../blockchain');
@@ -24,10 +28,18 @@ const k = [
 const p = k.map(get_public_key_from_private_key).map(encode);
 
 const test_blocks = [];
+const test_accounts = {};
 const validate_and_load_test_blocks = (...blocks) => {
-    blocks.forEach(block => equal(0, validate_block(block).length));
-    blocks.forEach(block => ok(is_block_solution_under_target(block)));
-    blocks.forEach(block => test_blocks.push(block));
+    blocks.forEach(block => {
+        const parent_accounts = test_accounts[block.parent];
+        test_accounts[block.hash] = apply_block_transactions(
+            block.transactions,
+            block.author,
+            test_accounts[block.parent]);
+
+        equal(0, validate_block_deep(block, test_accounts[block.parent]));
+        test_blocks.push(block);
+    });
 }
 
 module.exports = {
@@ -147,12 +159,6 @@ module.exports = {
     'get_block_by_hash retrieves the initial block': () => ok(get_block_by_hash(test_blocks[0].hash)),
     'get_block_by_hash retrieves the initial block and it has the same hash': () => equal(test_blocks[0].hash, get_block_by_hash(test_blocks[0].hash).hash),
     'get_highest_block retrieves the first block': () => equal(test_blocks[0].hash, get_highest_block().hash),
-    'store_block stores the initial block, and it has running balances': () => ok(get_block_by_hash(test_blocks[0].hash).balances),
-    'store_block stores the initial block, and it has accounts': () => ok(get_block_by_hash(test_blocks[0].hash).accounts),
-    'store_block stores the author\'s block reward as a balance (1st)': () => equal(BLOCK_REWARD, get_block_by_hash(test_blocks[0].hash).balances[test_blocks[0].author]),
-    'store_block stores the author\'s block reward as an account (1st)': () => equal(BLOCK_REWARD, get_block_by_hash(test_blocks[0].hash).accounts[test_blocks[0].author]),
-    'store_block stores only one balance in the first block': () => equal(1, Object.keys(get_block_by_hash(test_blocks[0].hash).balances).length),
-    'store_block stores only one account in the first block': () => equal(1, Object.keys(get_block_by_hash(test_blocks[0].hash).accounts).length),
     'store_block will store the second block': () => store_block(test_blocks[1]),
     'get_block_by_hash retrieves the second block': () => ok(get_block_by_hash(test_blocks[1].hash)),
     'get_highest_block retrieves the second block': () => equal(test_blocks[1].hash, get_highest_block().hash),

@@ -100,7 +100,7 @@ const finalize_block = (block, private_key, compliment) => {
  */
 const hash_block = (block) => ({
     ...block,
-    hash: encode(hash(block, ['signature', 'hash', 'compliment']))
+    hash: encode(hash(block, ['signature', 'hash', 'compliment', 'accounts']))
 });
 
 module.exports = {

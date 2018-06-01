@@ -148,7 +148,7 @@ module.exports = {
 
     'validate_block rejects no input': () => contains(validate_block(), "No input was given"),
     'validate_block needs transactions array': () => contains(validate_block({}), "The block does not have a transactions array"),
-    'validate_block passes transactions array': () => notContains(validate_block({ transactions: [] }), "The block does not have a transactions array"),
+    'validate_block passes transactions array': () => notContains(validate_block({ transactions: [] }), /The block does not have a transactions array/),
     'validate_block needs transactions to be an array': () => contains(validate_block({ transactions: {} }), "transactions is not an array"),
     'validate_block passes transactions to be an array': () => notContains(validate_block({ transactions: [] }), "transactions is not an array"),
     'validate_block needs compliment': () => contains(validate_block({}), "The block does not have a compliment"),

@@ -140,7 +140,9 @@ const validate_block = (block) => {
         return ["No input was given"];
     }
 
-    const { transactions, parent, compliment, height, hash: block_hash, author, signature, ...rest } = block;
+    const { transactions, parent, compliment,
+        height, hash: block_hash, author,
+        signature, accounts, ...rest } = block;
 
     if (!transactions) {
         errors.push("The block does not have a transactions array");
@@ -154,7 +156,7 @@ const validate_block = (block) => {
         errors.push("The compliment was not a 43 character long base64 string");
     }
 
-    const verify_hash = encode(hash(block, ['signature', 'hash', 'compliment']));
+    const verify_hash = encode(hash(block, ['signature', 'hash', 'compliment', 'accounts']));
     if (!block_hash) {
         errors.push("The block does not have a hash property");
     } else {
@@ -261,7 +263,7 @@ const validate_transactions_deep = (transactions, accounts) => {
     }
 }
 
-const validate_block_deep = (block, parent) => {
+const validate_block_deep = (block, parent_accounts) => {
     const errors = validate_block(block);
 
     if (!block) {
@@ -274,7 +276,7 @@ const validate_block_deep = (block, parent) => {
         }
 
         if (block.parent) {
-            if (!parent) {
+            if (!parent_accounts) {
                 errors.push(`could not find parent block ${abbreviate(block.parent)}`);
             }
         } else {
@@ -283,9 +285,9 @@ const validate_block_deep = (block, parent) => {
             }
         }
 
-        if (parent) {
+        if (parent_accounts) {
             if (block.transactions && block.transactions.length) {
-                const invalid_transactions = validate_transactions_deep(block.transactions, parent.accounts);
+                const invalid_transactions = validate_transactions_deep(block.transactions, parent_accounts);
                 invalid_transactions.forEach(x => errors.push(`The block contained an invalid transaction: ${x}`));
             }
         }

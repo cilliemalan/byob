@@ -22,6 +22,8 @@ const { get_signer, add_key, get_keys,
     get_block_by_hash, get_highest_block,
     store_block } = require('../db');
 
+const { apply_block_transactions } = require('../accounting');
+
 const {
     is_valid_base64,
     is_valid_public_key,
@@ -86,6 +88,7 @@ const
 
 
 let real0, real1, real2, real3, real4, real5, real6, real7, real8;
+let accs0, accs1, accs2, accs3, accs4, accs5, accs6, accs7, accs8;
 
 module.exports = {
     'is_valid_base64 valid for valid base64': () => ok(is_valid_base64('blahdiblah')),
@@ -355,19 +358,29 @@ module.exports = {
         real6 = sign(hash_block(solved6), k[0]); // altered
         real7 = sign(solved7, k[1]); // inalid level 0
         real8 = sign(solved8, k[2]); // nonexistant parent
+
+        accs0 = apply_block_transactions(real0.transactions, real0.author);
+        accs1 = apply_block_transactions(real1.transactions, real1.author, accs0);
+        accs2 = apply_block_transactions(real2.transactions, real2.author, accs1);
+        accs3 = apply_block_transactions(real3.transactions, real3.author, accs2);
+        accs4 = apply_block_transactions(real4.transactions, real4.author, accs3);
+        accs5 = apply_block_transactions(real5.transactions, real5.author, accs4);
+        accs6 = apply_block_transactions(real6.transactions, real6.author, accs4);
+        accs7 = apply_block_transactions(real7.transactions, real7.author);
+        accs8 = apply_block_transactions(real8.transactions, real8.author);
     },
 
-    'validate_block_deep validates root block': () => { empty(validate_block_deep(real0)); store_block(real0); },
-    'validate_block_deep validates level 1 block': () => { empty(validate_block_deep(real1, get_block_by_hash(real1.parent))); store_block(real1); },
-    'validate_block_deep validates level 2 block': () => { empty(validate_block_deep(real2, get_block_by_hash(real2.parent))); store_block(real2); },
-    'validate_block_deep validates level 3 block': () => { empty(validate_block_deep(real3, get_block_by_hash(real3.parent))); store_block(real3); },
-    'validate_block_deep validates level 4 block': () => { empty(validate_block_deep(real4, get_block_by_hash(real4.parent))); store_block(real4); },
+    'validate_block_deep validates root block': () => { empty(validate_block_deep(real0)); },
+    'validate_block_deep validates level 1 block': () => { empty(validate_block_deep(real1, accs0)); },
+    'validate_block_deep validates level 2 block': () => { empty(validate_block_deep(real2, accs1)); },
+    'validate_block_deep validates level 3 block': () => { empty(validate_block_deep(real3, accs2)); },
+    'validate_block_deep validates level 4 block': () => { empty(validate_block_deep(real4, accs3)); },
     'validate_block_deep rejects no input': () => contains(validate_block_deep(), /No input was given/),
     'validate_block_deep rejects blank block': () => notEmpty(validate_block_deep({})),
-    'validate_block_deep rejects invalid block': () => contains(validate_block_deep(real5, get_block_by_hash(real5.parent)), /The block contained an invalid transaction/),
-    'validate_block_deep rejects altered block': () => contains(validate_block_deep(real6, get_block_by_hash(real6.parent)), /The block solution was not under the target/),
-    'validate_block_deep rejects root block with transactions': () => contains(validate_block_deep(real7, get_block_by_hash(real7.parent)), /Height 0 block had transactions/),
-    'validate_block_deep rejects block with bad parent': () => contains(validate_block_deep(real8, null), /could not find parent block/),
+    'validate_block_deep rejects invalid block': () => contains(validate_block_deep(real5, accs4), /The block contained an invalid transaction/),
+    'validate_block_deep rejects altered block': () => contains(validate_block_deep(real6, accs4), /The block solution was not under the target/),
+    'validate_block_deep rejects root block with transactions': () => contains(validate_block_deep(real7), /Height 0 block had transactions/),
+    'validate_block_deep rejects block with bad parent': () => contains(validate_block_deep(real8), /could not find parent block/),
 
     'is_block_solution_under_target true if block solution is valid': () => ok(is_block_solution_under_target({ compliment: 'fytXW9IZbMDkIMfZGs1aNWEVt4EXBnsiTwEFBDQx8Cw', hash: 'i7BrIRIbPDAcTai7jFl0Hn6gAVX-sf5POMnXF4-3vak' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
     'is_block_solution_under_target true if block solution is valid (harder)': () => ok(is_block_solution_under_target({ compliment: 'tgP1O8_oAKAsRWnmiPXBo2JemPgEl0T7c96Bsg_MpDs', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAAAKvMdxGEYc78_cINKza6fD09TT11gWFpfHBo87Rs')),

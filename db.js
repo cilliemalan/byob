@@ -11,7 +11,7 @@ chmodSync(KEYS_FILE, 0o600);
 const db = low(new FileSync(DB_FILE));
 chmodSync(DB_FILE, 0o600);
 keys_db.defaults({ keys: {} }).write();
-db.defaults({ blocks: {} }).write();
+db.defaults({ blocks: {}, accounts: {} }).write();
 
 
 // key related stuff

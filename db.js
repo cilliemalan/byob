@@ -114,5 +114,7 @@ module.exports = {
     get_keys,
     get_block_by_hash,
     get_highest_block,
-    store_block
+    store_block,
+    store_accounts,
+    get_accounts
 };

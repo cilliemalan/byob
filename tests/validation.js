@@ -17,6 +17,10 @@ const { hash_block } = require('../blockchain');
 
 const { solve } = require('../solver');
 
+const { get_signer, add_key, get_keys,
+    get_block_by_hash, get_highest_block,
+    store_block } = require('../db');
+
 const {
     is_valid_base64,
     is_valid_public_key,
@@ -26,6 +30,7 @@ const {
     validate_transaction,
     validate_block,
     validate_transactions_deep,
+    validate_block_deep,
     is_block_solution_under_target } = require('../validation');
 
 const k = [generate_key(), generate_key(), generate_key()].map(encode);
@@ -77,6 +82,9 @@ const
         parent: block1.hash,
         author: p[2]
     }), k[2]);
+
+
+let real0, real1, real2, real3, real4, real5, real6;
 
 module.exports = {
     'is_valid_base64 valid for valid base64': () => ok(is_valid_base64('blahdiblah')),
@@ -311,15 +319,22 @@ module.exports = {
             solved6 = {
                 compliment: encode(await solve(unsolved5.hash)),
                 ...unsolved5
-            },
-            signed0 = sign(solved0, k[0]),
-            signed1 = sign(solved1, k[1]),
-            signed2 = sign(solved2, k[2]),
-            signed3 = sign(solved3, k[0]),
-            signed4 = sign(solved4, k[1]),
-            signed5 = sign(solved5, k[2]),
-            signed6 = sign(solved6, k[0]);
+            };
+        real0 = sign(solved0, k[0]);
+        real1 = sign(solved1, k[1]);
+        real2 = sign(solved2, k[2]);
+        real3 = sign(solved3, k[0]);
+        real4 = sign(solved4, k[1]);
+        real5 = sign(solved5, k[2]); // invalid
+        real6 = sign(solved6, k[0]);
     },
+
+    'validate_block_deep validates root block': () => { empty(validate_block_deep(real0)); store_block(real0); },
+    'validate_block_deep validates level 1 block': () => { empty(validate_block_deep(real1, get_block_by_hash(real1.parent))); store_block(real1); },
+    'validate_block_deep validates level 2 block': () => { empty(validate_block_deep(real2, get_block_by_hash(real2.parent))); store_block(real2); },
+    'validate_block_deep validates level 3 block': () => { empty(validate_block_deep(real3, get_block_by_hash(real3.parent))); store_block(real3); },
+    'validate_block_deep validates level 4 block': () => { empty(validate_block_deep(real4, get_block_by_hash(real4.parent))); store_block(real4); },
+    'validate_block_deep rejects invalid block': () => contains(validate_block_deep(real5, get_block_by_hash(real5.parent)), /The block contained an invalid transaction/),
 
     'is_block_solution_under_target true if block solution is valid': () => ok(is_block_solution_under_target({ compliment: 'fytXW9IZbMDkIMfZGs1aNWEVt4EXBnsiTwEFBDQx8Cw', hash: 'i7BrIRIbPDAcTai7jFl0Hn6gAVX-sf5POMnXF4-3vak' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
     'is_block_solution_under_target true if block solution is valid (harder)': () => ok(is_block_solution_under_target({ compliment: 'tgP1O8_oAKAsRWnmiPXBo2JemPgEl0T7c96Bsg_MpDs', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAAAKvMdxGEYc78_cINKza6fD09TT11gWFpfHBo87Rs')),

@@ -4,6 +4,7 @@ const { isRegExp } = require('util');
 const contains = (a, b) => ok((isRegExp(b) ? a.filter(x => b.test(x)) : a.filter(x => x == b)).length);
 const notContains = (a, b) => ok(!(isRegExp(b) ? a.filter(x => b.test(x)) : a.filter(x => x == b)).length);
 const empty = (a) => ok(a.length == 0);
+const notEmpty = (a) => ok(a.length != 0);
 const noInvalidTransaction = (a) => empty(a);
 const hasInvalidTransaction = (a) => contains(a, /The transaction .+, after applied yielded a negative balance on the account\(s\) .+\./);
 
@@ -145,6 +146,7 @@ module.exports = {
     'validate_transaction passes a valid transaction 2': () => ok(validate_transaction(transaction2).length == 0),
     'validate_transaction passes a valid transaction 3': () => ok(validate_transaction(transaction3).length == 0),
 
+    'validate_block_deep rejects no input': () => contains(validate_block(), "No input was given"),
     'validate_block needs transactions array': () => contains(validate_block({}), "The block does not have a transactions array"),
     'validate_block passes transactions array': () => notContains(validate_block({ transactions: [] }), "The block does not have a transactions array"),
     'validate_block needs transactions to be an array': () => contains(validate_block({ transactions: {} }), "transactions is not an array"),

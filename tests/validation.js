@@ -84,7 +84,7 @@ const
     }), k[2]);
 
 
-let real0, real1, real2, real3, real4, real5, real6;
+let real0, real1, real2, real3, real4, real5, real6, real7, real8;
 
 module.exports = {
     'is_valid_base64 valid for valid base64': () => ok(is_valid_base64('blahdiblah')),
@@ -280,17 +280,29 @@ module.exports = {
                 parent: unsolved3.hash,
                 author: p[1]
             }),
-            unsolved5 = hash_block({
+            unsolved5 = hash_block({ // double spend
                 transactions: [transaction6],
                 height: 5,
                 parent: unsolved4.hash,
                 author: p[2]
             }),
-            unsolved6 = hash_block({
+            unsolved6 = hash_block({ // will be altered
                 transactions: [transaction7],
                 height: 5,
                 parent: unsolved4.hash,
-                author: p[0]
+                author: p[2] // will modify this
+            }),
+            unsolved7 = hash_block({ // level 0 with transactions
+                transactions: [transaction1],
+                height: 0,
+                parent: undefined,
+                author: p[1]
+            }),
+            unsolved8 = hash_block({ // nonexistent parent
+                transactions: [],
+                height: 99,
+                parent: encode(generate_nonce()),
+                author: p[2]
             }),
             solved0 = {
                 compliment: encode(await solve(unsolved0.hash)),
@@ -319,14 +331,28 @@ module.exports = {
             solved6 = {
                 compliment: encode(await solve(unsolved5.hash)),
                 ...unsolved5
+            },
+            solved7 = {
+                compliment: encode(await solve(unsolved7.hash)),
+                ...unsolved7
+            },
+            solved8 = {
+                compliment: encode(await solve(unsolved8.hash)),
+                ...unsolved8
             };
+
+        // alter block 6
+        solved6.author = p[0];
+
         real0 = sign(solved0, k[0]);
         real1 = sign(solved1, k[1]);
         real2 = sign(solved2, k[2]);
         real3 = sign(solved3, k[0]);
         real4 = sign(solved4, k[1]);
-        real5 = sign(solved5, k[2]); // invalid
-        real6 = sign(solved6, k[0]);
+        real5 = sign(solved5, k[2]); // invalid double spend
+        real6 = sign(hash_block(solved6), k[0]); // altered
+        real7 = sign(solved7, k[1]); // inalid level 0
+        real8 = sign(solved8, k[2]); // nonexistant parent
     },
 
     'validate_block_deep validates root block': () => { empty(validate_block_deep(real0)); store_block(real0); },
@@ -334,7 +360,12 @@ module.exports = {
     'validate_block_deep validates level 2 block': () => { empty(validate_block_deep(real2, get_block_by_hash(real2.parent))); store_block(real2); },
     'validate_block_deep validates level 3 block': () => { empty(validate_block_deep(real3, get_block_by_hash(real3.parent))); store_block(real3); },
     'validate_block_deep validates level 4 block': () => { empty(validate_block_deep(real4, get_block_by_hash(real4.parent))); store_block(real4); },
+    'validate_block_deep rejects no input': () => contains(validate_block_deep(), /No input was given/),
+    'validate_block_deep rejects blank block': () => notEmpty(validate_block_deep({})),
     'validate_block_deep rejects invalid block': () => contains(validate_block_deep(real5, get_block_by_hash(real5.parent)), /The block contained an invalid transaction/),
+    'validate_block_deep rejects altered block': () => contains(validate_block_deep(real6, get_block_by_hash(real6.parent)), /The block solution was not under the target/),
+    'validate_block_deep rejects root block with transactions': () => contains(validate_block_deep(real7, get_block_by_hash(real7.parent)), /Height 0 block had transactions/),
+    'validate_block_deep rejects block with bad parent': () => contains(validate_block_deep(real8, null), /could not find parent block/),
 
     'is_block_solution_under_target true if block solution is valid': () => ok(is_block_solution_under_target({ compliment: 'fytXW9IZbMDkIMfZGs1aNWEVt4EXBnsiTwEFBDQx8Cw', hash: 'i7BrIRIbPDAcTai7jFl0Hn6gAVX-sf5POMnXF4-3vak' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
     'is_block_solution_under_target true if block solution is valid (harder)': () => ok(is_block_solution_under_target({ compliment: 'tgP1O8_oAKAsRWnmiPXBo2JemPgEl0T7c96Bsg_MpDs', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAAAKvMdxGEYc78_cINKza6fD09TT11gWFpfHBo87Rs')),

@@ -87,15 +87,25 @@ const store_block = (block) => {
         }
     }
 
-    const block_object = {
-        ...block
-    };
-
-    block_object.balances = calculate_running_balances(block_object);
-    block_object.accounts = calculate_accounts(block_object);
-
-    db.get('blocks').set(block_object.hash, block_object).write();
+    db.get('blocks').set(block.hash, block).write();
 };
+
+/**
+ * Stores the account balances as ancilliary information that
+ * goes side-by-side with the block chain.
+ * @param {*} hash The block hash to store accounts for.
+ * @param {*} accounts The accounts object to store.
+ */
+const store_accounts = (hash, accounts) => {
+    db.get('accounts').set(hash, accounts).write();
+}
+
+/**
+ * Retrieves the accounts calculated for a block in the blockchain.
+ * @param {*} hash The hash of the block to retrieve accounts for.
+ */
+const get_accounts = (hash) =>
+    db.get('accounts').get(hash).value();
 
 /**
  * Applies all the transactions of a block. Will return an object with

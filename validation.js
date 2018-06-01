@@ -6,7 +6,6 @@ const _ = require('lodash');
 const { isArray } = _;
 const { createHash } = require('crypto');
 
-
 const max_private_key = Buffer.from('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140', 'hex');
 
 const { TARGET } = require('./configuration');
@@ -257,6 +256,39 @@ const validate_transactions_deep = (transactions, accounts) => {
     }
 }
 
+const validate_block_deep = (block, parent) => {
+    const errors = validate_block(block);
+
+    if (!block) {
+        return [];
+    } else {
+
+        // check PoW solution
+        if (!is_block_solution_under_target(block, TARGET)) {
+            errors.push('The block solution was not under the target');
+        }
+
+        if (block.parent) {
+            if (!parent) {
+                errors.push(`could not find parent block ${abbreviate(block.parent)}`);
+            }
+        } else {
+            if (block.height == 0 && block.transactions.length) {
+                errors.push('Height 0 block had transactions');
+            }
+        }
+
+        if (parent) {
+            if (block.transactions && block.transactions.length) {
+                const invalid_transactions = validate_transactions_deep(block.transactions, parent.accounts);
+                invalid_transactions.forEach(x => errors.push(`The block contained an invalid transaction: ${x}`));
+            }
+        }
+
+        return errors;
+    }
+}
+
 /**
  * Checks if the block compliment and hash solve the PoW problem.
  * @param {Object} block The block to validate
@@ -282,5 +314,6 @@ module.exports = {
     validate_transaction,
     validate_block,
     validate_transactions_deep,
+    validate_block_deep,
     is_block_solution_under_target
 };

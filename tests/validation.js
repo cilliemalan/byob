@@ -146,7 +146,7 @@ module.exports = {
     'validate_transaction passes a valid transaction 2': () => ok(validate_transaction(transaction2).length == 0),
     'validate_transaction passes a valid transaction 3': () => ok(validate_transaction(transaction3).length == 0),
 
-    'validate_block_deep rejects no input': () => contains(validate_block(), "No input was given"),
+    'validate_block rejects no input': () => contains(validate_block(), "No input was given"),
     'validate_block needs transactions array': () => contains(validate_block({}), "The block does not have a transactions array"),
     'validate_block passes transactions array': () => notContains(validate_block({ transactions: [] }), "The block does not have a transactions array"),
     'validate_block needs transactions to be an array': () => contains(validate_block({ transactions: {} }), "transactions is not an array"),

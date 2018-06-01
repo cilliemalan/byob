@@ -44,6 +44,55 @@ const create_transaction = (splits, keys) => {
 }
 
 /**
+ * Initializes a block. The block will be valid but the compliment will be incorrect. In order
+ * to accept this block in a blockchain a compliment will need to be chosen that satisfies
+ * the PoW requirements, and the block signed.
+ * @param {Array} transactions The transactions to include in the block
+ * @param {Number} height The height of this block. Must be parent block + 1
+ * @param {string|Buffer} parent The parent block hash
+ * @param {string|Buffer} private_key The private key with which to sign this blockchain
+ * @returns {Object} an initialized, valid block with incorrect compliment.
+ */
+const create_block = (transactions, height, parent, author) => {
+    if (parent instanceof Buffer) parent = encode(parent);
+    if (author instanceof Buffer) author = encode(author);
+    const block = hash_block({
+        compliment: encode(new Buffer(32)),
+        transactions,
+        height,
+        parent,
+        author,
+    });
+    validate_throw(block, validate_block);
+    return block;
+}
+
+/**
+ * Recreates a block using a new set of transactions.
+ * @param {*} block The block to replace the transactions of.
+ * @param {*} transactions The new set of transactions.
+ */
+const recreate_block = (block, transactions) => {
+    const { height, parent, author } = block;
+    return create_block(transactions, height, parent, author);
+}
+
+/**
+ * Finalize a block, including the compliment and signature.
+ * @param {*} block The block to finalize and sign.
+ * @param {*} private_key The private key to sign with.
+ * @param {*} compliment The complicment to include in the block
+ */
+const finalize_block = (block, private_key, compliment) => {
+    const author = encode(get_public_key_from_private_key(private_key));
+    block = sign({
+        ...block,
+        author,
+        compliment
+    }, private_key);
+}
+
+/**
  * Calculates the hash for a block using the special hash config that excludes the
  * props signature, hash, and compliment props. The result will be the block including
  * the hash property.
@@ -54,35 +103,9 @@ const hash_block = (block) => ({
     hash: encode(hash(block, ['signature', 'hash', 'compliment']))
 });
 
-/**
- * Initializes a block. The block will be valid but the compliment will be incorrect. In order
- * to accept this block in a blockchain a compliment will need to be chosen that satisfies
- * the PoW requirements, and the block re-signed.
- * @param {Array} transactions The transactions to include in the block
- * @param {Number} height The height of this block. Must be parent block + 1
- * @param {string|Buffer} parent The parent block hash
- * @param {string|Buffer} private_key The private key with which to sign this blockchain
- * @returns {Object} an initialized, valid block with incorrect compliment.
- */
-const initialize_block = (transactions, height, parent, private_key) => {
-    if (parent instanceof Buffer) parent = encode(parent);
-    const author = encode(get_public_key_from_private_key(private_key));
-    const compliment = encode(new Buffer(32));
-    const block = sign(
-        hash_block({
-            transactions,
-            height,
-            parent,
-            compliment,
-            author
-        }), private_key);
-    validate_throw(block, validate_block);
-    return block;
-}
-
 module.exports = {
     create_split,
     create_transaction,
-    initialize_block,
+    create_block,
     hash_block
 };

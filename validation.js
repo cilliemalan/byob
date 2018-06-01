@@ -135,6 +135,11 @@ const validate_transaction = (transaction) => {
  */
 const validate_block = (block) => {
     const errors = [];
+
+    if (!block) {
+        return ["No input was given"];
+    }
+
     const { transactions, parent, compliment, height, hash: block_hash, author, signature, ...rest } = block;
 
     if (!transactions) {
@@ -260,7 +265,7 @@ const validate_block_deep = (block, parent) => {
     const errors = validate_block(block);
 
     if (!block) {
-        return [];
+        return ["No input was given"];
     } else {
 
         // check PoW solution
@@ -298,6 +303,10 @@ const validate_block_deep = (block, parent) => {
 const is_block_solution_under_target = (block, target = TARGET) => {
     if (typeof target == "string") target = decode(target);
     const { compliment, hash } = block;
+
+    if (!compliment || !hash) {
+        return false;
+    }
 
     const complemented = xor_buffers(compliment, hash);
     const digest = createHash('sha256').update(complemented).digest();

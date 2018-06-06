@@ -4,7 +4,9 @@ const {
     decode,
     get_public_key_from_private_key,
     hash } = require('./utils');
-const { validate_block, validate_transaction, validate_split, validate_transactions_deep } = require('./validation');
+const { validate_block, validate_transaction, 
+    validate_split, validate_transactions_deep,
+    validate_block_deep } = require('./validation');
 
 const TARGET = decode(require('./configuration').TARGET);
 
@@ -27,7 +29,7 @@ const validate_throw = (wut, validate, message) => {
 const add_transaction_to_pool = (transaction, pool, accounts) => {
     const new_pool = [...pool, transaction];
     const errors = validate_transactions_deep(new_pool, accounts);
-    if(errors.length) {
+    if (errors.length) {
         throw errors.join(". ");
     }
 
@@ -100,16 +102,14 @@ const recreate_block = (block, transactions) => {
 /**
  * Finalize a block, including the compliment and signature.
  * @param {*} block The block to finalize and sign.
- * @param {*} private_key The private key to sign with.
- * @param {*} compliment The complicment to include in the block
+ * @param {*} compliment The complicment to include in the block.
+ * @param {*} signer A function that will sign the block.
  */
-const finalize_block = (block, private_key, compliment) => {
-    const author = encode(get_public_key_from_private_key(private_key));
-    block = sign({
+const finalize_block = (block, compliment, signer) => {
+    return signer({
         ...block,
-        author,
         compliment
-    }, private_key);
+    });
 }
 
 /**
@@ -128,5 +128,6 @@ module.exports = {
     create_split,
     create_transaction,
     create_block,
-    hash_block
+    hash_block,
+    finalize_block
 };

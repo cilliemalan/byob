@@ -392,8 +392,7 @@ module.exports = {
     'validate_block_deep rejects block with bad parent': () => contains(validate_block_deep(real8), /could not find parent block/),
     'validate_block_deep needs signature': () => contains(validate_block_deep({}), "The block is not signed"),
     'validate_block_deep needs only one signature': () => contains(validate_block_deep(sign({}, k)), "The block is not signed"),
-    'validate_block_deep passes exactly one signature': () => 
-    notContains(validate_block_deep(sign({}, k[0])), "The block is not signed"),
+    'validate_block_deep passes exactly one signature': () => notContains(validate_block_deep(sign({}, k[0])), "The block is not signed"),
     'validate_block_deep needs signature valid base64': () => contains(validate_block_deep({ signature: '#&#^$7' }), "The block signature was not a valid base64 string"),
     'validate_block_deep needs correct signature': () => contains(validate_block_deep(sign({ author: p[1] }, k[0])), "The block signature is not valid"),
     'validate_block_deep passes correct signature': () => notContains(validate_block_deep(sign({ author: p[1] }, k[1])), "The block signature is not valid"),

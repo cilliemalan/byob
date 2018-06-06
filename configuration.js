@@ -7,5 +7,5 @@ module.exports = {
         resolve(process.env.USERPROFILE || process.env.HOME, '.byobkeys.json')),
     DB_FILE: resolve(process.env.BYOB_DB_FILE ||
         resolve(process.cwd(), 'db.json')),
-    BROKER: "amqps://byob:byob@mq.chills.co.za/byob"
+    BROKER: BYOB_BROKER || "amqps://byob:byob@mq.chills.co.za/byob"
 };

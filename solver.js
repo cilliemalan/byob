@@ -96,18 +96,22 @@ const new_problem = (hash, target) => {
  * Finds a compliment such that hash ^ compliment < target. Note: if this is called while
  * a previous problem is still in the process of being solved, that problem solving
  * process will NOT be cancelled and the previously returned promise will resolve when
- * THIS problem finishes.
+ * THIS problem finishes, but returning null instead of the compliment.
  * @param {Buffer} hash The hash part of the problem
  * @param {Buffer} target The target under which the solution should be. Defaults to the
  * target set in configuration.
- * @returns {Promise<Buffer>} the solution to the problem
+ * @returns {Promise<Buffer>} the solution to the problem, or null if the hash has been updated.
  */
 const solve = async (hash, target = TARGET) => {
     if (typeof hash == "string") hash = decode(hash);
     if (typeof target == "string") target = decode(target);
 
     const result = await new_problem(hash, target);
-    return result.compliment;
+    if(result.hash.equals(hash) && result.target.equals(target)) {
+        return result.compliment;
+    } else {
+        return null;
+    }
 }
 
 /**

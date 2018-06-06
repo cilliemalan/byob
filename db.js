@@ -61,8 +61,7 @@ const get_block_by_hash = (hash) =>
 const get_highest_block = () =>
     db.get('blocks')
         .reduce((p, c) =>
-            p.height > c.height ? p : c,
-            { height: -1 })
+            p ? (p.height > c.height ? p : c) : c)
         .value();
 
 /**

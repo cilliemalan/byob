@@ -228,7 +228,7 @@ const get_invalid_transactions_internal = (transactions, accounts) => {
     } else {
         const problematic_transactions = [];
 
-        const all_accounts = _(transactions)
+        let all_accounts = _(transactions)
             .flatMap(x => x.splits)
             .map(x => x.account)
             .keyBy(x => x)
@@ -269,7 +269,7 @@ const get_invalid_transactions_internal = (transactions, accounts) => {
  * @param {*} accounts An object containing account balances
  */
 const get_invalid_transactions = (transactions, accounts) => {
-    const problematic_transactions = get_invalid_transactions(transactions, accounts);
+    const problematic_transactions = get_invalid_transactions_internal(transactions, accounts);
     return problematic_transactions.map(({ transaction }) => transaction);
 }
 
@@ -298,7 +298,7 @@ const exclude_invalid_transactions = (transactions, accounts) => {
  * @param {*} accounts An object containing account balances
  */
 const validate_transactions_deep = (transactions, accounts) => {
-    const problematic_transactions = get_invalid_transactions(transactions, accounts);
+    const problematic_transactions = get_invalid_transactions_internal(transactions, accounts);
     return problematic_transactions.map(({ transaction_hash, negative_accounts }) =>
         `The transaction ${transaction_hash}, after applied yielded a negative balance on the account(s) ${negative_accounts.join(', ')}.`);
 }

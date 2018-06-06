@@ -1,1 +1,9 @@
-console.log('Hello World');
+
+
+
+async function main() {
+
+}
+
+
+main().catch(console.error);

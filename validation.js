@@ -221,12 +221,7 @@ const validate_block = (block) => {
     return errors;
 }
 
-/**
- * Validates that all the given transactions can legally be applied on a given set of accounts with balances.
- * @param {*} transactions The transactions to validate
- * @param {*} accounts An object containing account balances
- */
-const validate_transactions_deep = (transactions, accounts) => {
+const get_invalid_transactions_internal = (transactions, accounts) => {
 
     if (!transactions) {
         return [];
@@ -241,28 +236,78 @@ const validate_transactions_deep = (transactions, accounts) => {
             .value();
 
         transactions.forEach(transaction => {
+            const new_accounts = { ...all_accounts };
             transaction.splits.forEach(({ amount, account }) => {
-                all_accounts[account] += amount;
+                new_accounts[account] += amount;
             });
 
             const negative_accounts = _(transaction.splits).map(s => s.account)
                 .uniq()
-                .map(account => ({ account, balance: all_accounts[account] }))
+                .map(account => ({ account, balance: new_accounts[account] }))
                 .filter(({ balance }) => balance < 0)
                 .value();
 
             if (negative_accounts.length) {
                 problematic_transactions.push({
-                    transaction: encode(hash(transaction)),
+                    transaction,
+                    transaction_hash: encode(hash(transaction)),
                     negative_accounts: negative_accounts.map(({ account }) => abbreviate(account))
                 });
+            } else {
+                all_accounts = new_accounts;
             }
         });
 
-        return problematic_transactions.map(({ transaction, negative_accounts }) => `The transaction ${transaction}, after applied yielded a negative balance on the account(s) ${negative_accounts.join(', ')}.`);
+        return problematic_transactions;
     }
 }
 
+
+/**
+ * Inspects a pool of transactions and returns a list of transactions that are invalid.
+ * @param {*} transactions The transactions to inspect
+ * @param {*} accounts An object containing account balances
+ */
+const get_invalid_transactions = (transactions, accounts) => {
+    const problematic_transactions = get_invalid_transactions(transactions, accounts);
+    return problematic_transactions.map(({ transaction }) => transaction);
+}
+
+/**
+ * Given a list of transactions and an object of balances, this will return a new list
+ * of transactions with only valid transactions remaining.
+ * @param {*} transactions A list of transactions, some of which may be invalid.
+ * @param {*} accounts An object containing account balances.
+ */
+const exclude_invalid_transactions = (transactions, accounts) => {
+    for (; ;) {
+        const problematic_transactions = get_invalid_transactions(transactions, accounts);
+        if(problematic_transactions.length) {
+            transactions = transactions.filter(transaction => problematic_transactions.indexOf(transaction) == -1)
+        } else {
+            break;
+        }
+    }
+
+    return transactions;
+}
+
+/**
+ * Validates that all the given transactions can legally be applied on a given set of accounts with balances.
+ * @param {*} transactions The transactions to validate
+ * @param {*} accounts An object containing account balances
+ */
+const validate_transactions_deep = (transactions, accounts) => {
+    const problematic_transactions = get_invalid_transactions(transactions, accounts);
+    return problematic_transactions.map(({ transaction_hash, negative_accounts }) =>
+        `The transaction ${transaction_hash}, after applied yielded a negative balance on the account(s) ${negative_accounts.join(', ')}.`);
+}
+
+/**
+ * Validates a block thoroughly, inspecting the block solution and transactions for validity.
+ * @param {*} block The block to validated
+ * @param {*} parent_accounts The account balances of the parent block
+ */
 const validate_block_deep = (block, parent_accounts) => {
     const errors = validate_block(block);
 
@@ -324,6 +369,8 @@ module.exports = {
     validate_split,
     validate_transaction,
     validate_block,
+    get_invalid_transactions,
+    exclude_invalid_transactions,
     validate_transactions_deep,
     validate_block_deep,
     is_block_solution_under_target

@@ -190,14 +190,6 @@ const validate_block = (block) => {
         errors.push("No parent was specified but the height was not 0");
     }
 
-    if (!signature) {
-        errors.push("The block is not signed");
-    } else if (!is_valid_base64(signature)) {
-        errors.push("The block signature was not a valid base64 string");
-    } else if (author_valid && !verify(block)) {
-        errors.push("The block signature is not valid");
-    }
-
     const terrors = [];
 
     if (transactions && transactions.forEach) {
@@ -279,10 +271,15 @@ const get_invalid_transactions = (transactions, accounts) => {
  * @param {*} transactions A list of transactions, some of which may be invalid.
  * @param {*} accounts An object containing account balances.
  */
-const exclude_invalid_transactions = (transactions, accounts) => {
+const exclude_invalid_transactions = (transactions = [], accounts = {}) => {
+
+    if (!transactions.length) {
+        return [];
+    }
+
     for (; ;) {
         const problematic_transactions = get_invalid_transactions(transactions, accounts);
-        if(problematic_transactions.length) {
+        if (problematic_transactions.length) {
             transactions = transactions.filter(transaction => problematic_transactions.indexOf(transaction) == -1)
         } else {
             break;
@@ -328,6 +325,15 @@ const validate_block_deep = (block, parent_accounts) => {
             if (block.height == 0 && block.transactions.length) {
                 errors.push('Height 0 block had transactions');
             }
+        }
+
+
+        if (!block.signature) {
+            errors.push("The block is not signed");
+        } else if (!is_valid_base64(block.signature)) {
+            errors.push("The block signature was not a valid base64 string");
+        } else if (is_valid_base64(block.author) && !verify(block)) {
+            errors.push("The block signature is not valid");
         }
 
         if (parent_accounts) {

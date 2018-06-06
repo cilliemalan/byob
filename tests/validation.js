@@ -205,7 +205,12 @@ module.exports = {
         [
             { splits: [{ account: 'a', amount: 1 }, { account: 'b', amount: -1 }] },
             { splits: [{ account: 'b', amount: 1 }, { account: 'a', amount: -1 }] }
-        ], { 'a': 1, 'b': 99, 'c': 0 })),
+        ], { 'a': 0, 'b': 99, 'c': 0 })),
+    'validate_transactions_deep fails transactions that would succeed in a different order': () => hasInvalidTransaction(validate_transactions_deep(
+        [
+            { splits: [{ account: 'b', amount: 1 }, { account: 'a', amount: -1 }] },
+            { splits: [{ account: 'a', amount: 1 }, { account: 'b', amount: -1 }] }
+        ], { 'a': 0, 'b': 99, 'c': 0 })),
 
     'can build test blockchain 2': async () => {
 

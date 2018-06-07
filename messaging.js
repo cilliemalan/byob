@@ -37,6 +37,11 @@ class MessagingClient extends EventEmitter {
         }, { noAck: true });
     }
 
+    close() {
+        this.channel.close().catch(console.error);
+        this.connection.close().catch(console.error);
+    }
+
     async broadcast(type, message = {}) {
         await this.channel.publish('broadcast', '', encodeMessage({ from: this.identity, type, message }));
     }

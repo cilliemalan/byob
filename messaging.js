@@ -6,13 +6,6 @@ function encodeMessage(msg) {
     return Buffer.from(JSON.stringify(msg));
 }
 
-
-// possible messages:
-// 1. tallest_block - request a response with the height of the tallest block and its hash
-// 2. block - a message containing a block
-// 3. transaction - a message containing a transaction
-// 4. chain_request - request to be broadcast a segment of the blockchain
-
 class MessagingClient extends EventEmitter {
     constructor(identity, broker) {
         super();

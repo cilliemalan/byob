@@ -73,7 +73,7 @@ const receive_transaction = async (transaction) => {
     }
 }
 
-const receive_block = async (block) => {
+const receive_block = (block) => {
     try {
         const already_have_block = !!db.get_block_by_hash(block.hash);
 
@@ -210,10 +210,11 @@ const mine = async () => {
 
         // solve for the current block
         console.log(`mining for block hash ${utils.abbreviate(utils.encode(block.hash))}`);
-        const compliment = await solver.solve(block.hash, config.TARGET);
+        let hash_to_solve = block.hash;
+        const compliment = await solver.solve(hash_to_solve, config.TARGET);
 
         // check that the solution is still relevant
-        if (compliment) {
+        if (compliment && hash_to_solve == block.hash) {
             // a solution has been found!
             console.log('block solution found!');
             await submit_block(compliment);

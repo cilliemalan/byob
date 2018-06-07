@@ -18,7 +18,7 @@ class MessagingClient extends EventEmitter {
         this.connection = await amqp.connect(this.broker);
         this.channel = await this.connection.createChannel();
         await this.channel.assertExchange('broadcast', 'fanout');
-        await this.channel.assertQueue(this.identity);
+        await this.channel.assertQueue(this.identity, { exclusive: true });
         await this.channel.bindQueue(this.identity, 'broadcast', '');
         await this.channel.consume(this.identity, ({ content, fields, properties }) => {
             let decoded;

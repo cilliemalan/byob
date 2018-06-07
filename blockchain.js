@@ -80,7 +80,7 @@ const create_block = (transactions, height, parent, author) => {
     if (parent instanceof Buffer) parent = encode(parent);
     if (author instanceof Buffer) author = encode(author);
     const block = hash_block({
-        compliment: encode(new Buffer(32)),
+        compliment: encode(Buffer.alloc(32, 0)),
         transactions,
         height,
         parent,

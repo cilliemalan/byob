@@ -231,7 +231,7 @@ const xor_buffers = (a, b) => {
         throw "the two buffers must have the same length";
     }
 
-    const c = new Buffer(l);
+    const c = Buffer.alloc(l);
     for (let i = 0; i < l; ++i) {
         c[i] = a[i] ^ b[i];
     }

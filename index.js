@@ -65,6 +65,9 @@ const receive_transaction = async (transaction) => {
                 errors.forEach(console.error);
             } else {
                 transactions = new_pool;
+
+                // pool has changed. restart mining
+                mine();
             }
         }
     } catch (e) {
@@ -111,7 +114,7 @@ const receive_block = (block) => {
                             hash(transaction).equals(new_transaction_hash).length == 0));
 
                     // and remove invalid transactions for good measure.
-                    transactions = validation.exclude_invalid_transactions(transactions);
+                    transactions = validation.exclude_invalid_transactions(transactions, accounts);
 
                     // the highest block has changed so we need to restart mining
                     mine();

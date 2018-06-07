@@ -50,7 +50,7 @@ const hash = (wut, exclude_props = []) => {
 
     // remove undefined keys
     keys.forEach(key => {
-        if(typeof tohash[key] == "undefined") {
+        if (typeof tohash[key] == "undefined") {
             delete tohash[key];
         }
     });

@@ -28,7 +28,7 @@ const generate_keys_if_needed = () => {
         console.log('generating a key pair.');
         const pk = utils.generate_key();
         db.add_key(pk);
-        console.log(`generated ${utils.encode(utils.get_public_key_from_private_key(pk))}`);
+        console.log(`generated ${utils.abbreviate(utils.encode(utils.get_public_key_from_private_key(pk)))}`);
     }
 }
 
@@ -54,9 +54,12 @@ const receive_transaction = async (transaction) => {
             utils.hash(transaction).equals(transaction_hash)).length;
 
         if (!already_have_transaction) {
+            console.log(`received transaction ${utils.abbreviate(transaction_hash)}`);
+
             const new_pool = [...transactions, transaction];
             const highest_accounts = db.get_accounts(db.get_highest_block().hash);
             const errors = validation.validate_transactions_deep(new_pool, highest_accounts);
+            
             if (errors.length) {
                 console.error('there were problems with the received transaction:');
                 errors.forEach(console.error);
@@ -75,6 +78,8 @@ const receive_block = async (block) => {
         const already_have_block = !!db.get_block_by_hash(block.hash);
 
         if (!already_have_block) {
+
+            console.log(`received block ${utils.abbreviate(block.hash)}`);
 
             const parent_accounts = db.get_accounts(block.parent);
 
@@ -98,6 +103,7 @@ const receive_block = async (block) => {
                 const this_is_highest_block = db.get_highest_block().hash === block.hash;
 
                 if (this_is_highest_block) {
+                    console.log(`${utils.abbreviate(block.hash)} is new highest block`);
                     // remove transactions from the transaction pool that are in this block.
                     const hashed_block_transactions = block.transactions.map(utils.hash);
                     transactions = transactions.filter(transaction =>
@@ -123,6 +129,7 @@ const reply_with_highest_block = async (_, from) => {
         const highest_block = db.get_highest_block();
         const highest_height = highest_block ? highest_block.height : -1;
 
+        console.log(`sending highest block of ${highest_height} to ${utils.abbreviate(from)}`);
         await messaging_client.send_highest(from, highest_height);
     } catch (e) {
         console.error('error replying with highest block:');
@@ -170,6 +177,8 @@ const receive_highest = (height, from) => {
                     const my_height = my_highest ? my_highest.height : -1;
 
                     if (height > my_height) {
+                        console.log(`received highest block report of ${height} from ${utils.abbreviate(from)}`);
+                        console.log(`sending chain request to ${utils.abbreviate(from)}`);
                         // send chain request to the first highest chain holder
                         await messaging_client.send_chain_request(from);
                     }
@@ -193,7 +202,6 @@ const submit_block = async (compliment) => {
     // broadcast to the network
     console.log('broadcasting signed block');
     await messaging_client.broadcast_block(final_block);
-    console.log('block broadcasted');
 }
 
 const mine = async () => {
@@ -201,7 +209,7 @@ const mine = async () => {
         block = reinitialize_block(transactions);
 
         // solve for the current block
-        console.log(`mining for block hash ${utils.encode(block.hash)}`);
+        console.log(`mining for block hash ${utils.abbreviate(utils.encode(block.hash))}`);
         const compliment = await solver.solve(block.hash, config.TARGET);
 
         // check that the solution is still relevant

@@ -9,6 +9,7 @@ const node = process.argv0;
 const worker = resolvePath(__dirname, 'solver.worker.js');
 let running_process;
 const messages = new EventEmitter();
+messages.setMaxListeners(100);
 let send_message;
 
 const start_worker = () => {

@@ -39,28 +39,32 @@ const decode = (encoded) => Buffer.from(encoded, 'base64');
  * prop name to exclude from hash calculation. By default includes all props
  * @returns {Buffer} The hash of the object.
  */
-const hash = (wut, exclude_props) => {
+const hash = (wut, exclude_props = []) => {
     if (typeof wut != "object") {
         throw "this method only hashes objects";
     }
 
     // strip to be excluded props
-    let tohash = wut;
-    if (exclude_props && _.isArray(exclude_props)) {
-        tohash = { ...wut };
-        const keys = Object.keys(wut);
-        exclude_props.forEach(to_exclude => {
-            if (_.isRegExp(to_exclude)) {
-                keys.filter(x => to_exclude.test(x)).forEach(x => delete tohash[x]);
-            } else if (typeof to_exclude == "string") {
-                keys.filter(x => to_exclude == x).forEach(x => delete tohash[x]);
-            }
-        });
-    }
+    const tohash = { ...wut };
+    const keys = Object.keys(tohash);
 
-    const hashed = objecthash(tohash, { algorithm: 'sha256', encoding: 'base64' });
+    // remove undefined keys
+    keys.forEach(key => {
+        if(typeof tohash[key] == "undefined") {
+            delete tohash[key];
+        }
+    });
 
-    return Buffer.from(hashed, 'base64');
+    // remove to-be-excluded keys
+    exclude_props.forEach(to_exclude => {
+        if (_.isRegExp(to_exclude)) {
+            keys.filter(x => to_exclude.test(x)).forEach(x => delete tohash[x]);
+        } else if (typeof to_exclude == "string") {
+            keys.filter(x => to_exclude == x).forEach(x => delete tohash[x]);
+        }
+    });
+
+    return objecthash(tohash, { algorithm: 'sha256', encoding: 'buffer' });
 }
 
 /**
@@ -223,7 +227,7 @@ const xor_buffers = (a, b) => {
     if (typeof b == "string") b = decode(b);
 
     const l = a.length;
-    if(l != b.length) {
+    if (l != b.length) {
         throw "the two buffers must have the same length";
     }
 

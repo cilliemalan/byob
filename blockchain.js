@@ -106,6 +106,8 @@ const recreate_block = (block, transactions) => {
  * @param {*} signer A function that will sign the block.
  */
 const finalize_block = (block, compliment, signer) => {
+    if (compliment instanceof Buffer) compliment = encode(compliment);
+
     return signer({
         ...block,
         compliment

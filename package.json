@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "node tests",
+    "start": "node .",
     "coverage": "nyc -x tests/index.js --reporter=html node tests"
   },
   "dependencies": {

@@ -3,6 +3,7 @@ const {
     encode,
     decode,
     get_public_key_from_private_key,
+    generate_nonce,
     hash } = require('./utils');
 const { validate_block, validate_transaction, 
     validate_split, validate_transactions_deep,
@@ -55,12 +56,12 @@ const create_split = (account, amount) => {
  * Creates a transaction. A transaction consists of one or more splits.
  * The keys for all the splits with negative (credit) amounts
  * @param {*} splits The splits to include in the transaction.
- * @param {*} keys The keys for all the negative splits.
+ * @param {*} signer A function that will sign the transaction
  */
-const create_transaction = (splits, keys) => {
-    if (typeof splits != "array") throw "splits must be an array";
-    if (splits.length == 0) throw "must have at least one split";
-    const transaction = sign({ splits }, keys);
+const create_transaction = (splits, signer) => {
+    if (splits.length < 1) throw "must have at least two splits";
+    const nonce = encode(generate_nonce());
+    const transaction = signer({ splits, nonce });
     validate_throw(transaction, validate_transaction);
     return transaction;
 }

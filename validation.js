@@ -213,7 +213,7 @@ const validate_block = (block) => {
     return errors;
 }
 
-const get_invalid_transactions_internal = (transactions, accounts) => {
+const get_invalid_transactions_internal = (transactions, accounts = {}) => {
 
     if (!transactions) {
         return [];

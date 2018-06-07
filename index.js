@@ -59,7 +59,7 @@ const receive_transaction = async (transaction) => {
             const new_pool = [...transactions, transaction];
             const highest_accounts = db.get_accounts(db.get_highest_block().hash);
             const errors = validation.validate_transactions_deep(new_pool, highest_accounts);
-            
+
             if (errors.length) {
                 console.error('there were problems with the received transaction:');
                 errors.forEach(console.error);
@@ -107,11 +107,13 @@ const receive_block = (block) => {
 
                 if (this_is_highest_block) {
                     console.log(`${utils.abbreviate(block.hash)} is new highest block`);
+
                     // remove transactions from the transaction pool that are in this block.
-                    const hashed_block_transactions = block.transactions.map(utils.hash);
+                    const hashed_block_transactions =
+                        block.transactions.map(transaction => utils.hash(transaction));
                     transactions = transactions.filter(transaction =>
                         hashed_block_transactions.filter(new_transaction_hash =>
-                            hash(transaction).equals(new_transaction_hash).length == 0));
+                            utils.hash(transaction).equals(new_transaction_hash)).length == 0);
 
                     // and remove invalid transactions for good measure.
                     transactions = validation.exclude_invalid_transactions(transactions, accounts);

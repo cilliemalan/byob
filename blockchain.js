@@ -59,7 +59,7 @@ const create_split = (account, amount) => {
  * @param {*} signer A function that will sign the transaction
  */
 const create_transaction = (splits, signer) => {
-    if (splits.length < 1) throw "must have at least two splits";
+    if (splits.length < 2) throw "must have at least two splits";
     const nonce = encode(generate_nonce());
     const transaction = signer({ splits, nonce });
     validate_throw(transaction, validate_transaction);

@@ -1,9 +1,9 @@
 const { decode, encode } = require('./utils');
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 const { resolve: resolvePath } = require('path');
 const EventEmitter = require('events');
 
-const { TARGET } = require('./configuration');
+const { TARGET, SOLVER } = require('./configuration');
 
 const node = process.argv0;
 const worker = resolvePath(__dirname, 'solver.worker.js');
@@ -16,10 +16,9 @@ const start_worker = () => {
     if (running_process && !running_process.killed) {
         running_process.kill();
     }
-    running_process = null;
-
-    running_process = spawn(node, [worker, '-q'], {
-        stdio: ['pipe', 'pipe', process.stderr]
+    running_process = spawn(SOLVER, {
+        stdio: ['pipe', 'pipe', process.stderr],
+        shell: true
     });
 
     running_process.stdout.on('data', (data) => {
@@ -108,7 +107,7 @@ const solve = async (hash, target = TARGET) => {
     if (typeof target == "string") target = decode(target);
 
     const result = await new_problem(hash, target);
-    if(result.hash.equals(hash) && result.target.equals(target)) {
+    if (result.hash.equals(hash) && result.target.equals(target)) {
         return result.compliment;
     } else {
         return null;

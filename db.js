@@ -105,6 +105,38 @@ const store_block = (block) => {
 };
 
 /**
+ * Removes a block by its hash. Will also remove any descendent blocks.
+ * @param {*} hash 
+ */
+const remove_block_by_hash = (hash) => {
+    const find_children = (hashes) =>
+        db.get('blocks')
+            .filter(block => block.parent && hashes.indexOf(block.parent) != -1)
+            .map(block => block.hash)
+            .value();
+
+
+    // returns the blocks array with its children
+    const with_children = (hashes) => {
+        if (!hashes || !hashes.length) {
+            return [];
+        } else {
+            const children = find_children(hashes);
+            const including = [...hashes, ...with_children(children)];
+            return including;
+        }
+    }
+
+    const find_descendents = (hashes) =>
+        with_children(hashes);
+
+    const all_descendents = find_descendents([hash]);
+
+    let removing = db.get('blocks');
+    all_descendents.forEach(hash => removing.unset(hash).write());
+}
+
+/**
  * Stores the account balances as ancilliary information that
  * goes side-by-side with the block chain.
  * @param {*} hash The block hash to store accounts for.
@@ -130,6 +162,7 @@ module.exports = {
     get_highest_block,
     get_leaf_blocks,
     store_block,
+    remove_block_by_hash,
     store_accounts,
     get_accounts
 };

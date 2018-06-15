@@ -2,7 +2,7 @@ const { ok, equal, notEqual, deepEqual, throws } = require('assert');
 const { isArray, isFunction } = require('util');
 
 const { get_signer, add_key, get_keys,
-    get_block_by_hash, get_highest_block,
+    get_block_by_hash, get_highest_block, get_leaf_blocks,
     store_block, store_accounts, get_accounts } = require('../db');
 const {
     validate_block,
@@ -229,5 +229,7 @@ module.exports = {
 
     'store_accounts will store an object': () => store_accounts('abc', { a: 1, b: 2, c: 3 }),
     'get_accounts will retrieve an object': () => deepEqual({ a: 1, b: 2, c: 3 }, get_accounts('abc')),
-    'get_accounts will return undefined if nonexistent': () => equal(undefined, get_accounts('def'))
+    'get_accounts will return undefined if nonexistent': () => equal(undefined, get_accounts('def')),
+    'get_leaf_blocks contains the highest block': () => equal(1, get_leaf_blocks().filter(x => x.hash == get_highest_block().hash).length),
+    'get_leaf_blocks at this point has two blocks': () => equal(2, get_leaf_blocks().length),
 }

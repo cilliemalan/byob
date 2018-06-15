@@ -1,8 +1,7 @@
 const { ok, equal, notEqual, deepEqual, throws } = require('assert');
 
-const { encode, decode, hash, sign_hash, sign,
-    verify_sig, verify,
-    generate_key, get_public_key_from_private_key,
+const { encode, decode, hash, sign,
+    verify, generate_key, get_public_key_from_private_key,
     abbreviate, calculate_target, generate_nonce,
     buffer_less_than } = require('../utils');
 

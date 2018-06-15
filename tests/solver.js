@@ -1,4 +1,4 @@
-const { ok, equal, notEqual, deepEqual } = require('assert');
+const { ok } = require('assert');
 
 const { generate_nonce, calculate_target } = require('../utils');
 const { solve } = require('../solver');

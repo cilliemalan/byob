@@ -1,8 +1,7 @@
-const { ok, equal, notEqual, deepEqual } = require('assert');
+const { deepEqual } = require('assert');
 
 const { apply_block_transactions } = require('../accounting');
 
-const { generate_nonce, calculate_target } = require('../utils');
 const { BLOCK_REWARD } = require('../configuration');
 
 const

@@ -70,7 +70,12 @@ const revalidate_blockchain = () => {
     });
 
     console.log(`validated ${Object.keys(validated).length} blocks and removed ${Object.keys(validated).filter(k => !validated[k]).length} invalid blocks`);
-    console.log(`highest chain is ${db.get_highest_block().height + 1} blocks high`);
+    const highest = db.get_highest_block();
+    if (highest) {
+        console.log(`highest chain is ${(highest.height)} + 1 blocks high`);
+    } else {
+        console.log(`There is no blockchain in the database`);
+    }
 }
 
 const reinitialize_block = () => {
@@ -127,39 +132,45 @@ const receive_block = (block) => {
 
             const parent_accounts = db.get_accounts(block.parent);
 
-            const errors = validation.validate_block_deep(block, parent_accounts);
-            if (errors.length) {
-                console.error('There were problems with the received block:');
-                errors.forEach(console.error);
+            if (!parent_accounts && block.height != 0) {
+                // we don't have the parent for this block
+                console.log('Received orphan block, asking author for blockchain');
+                messaging_client.send_chain_request(block.author);
             } else {
+                const errors = validation.validate_block_deep(block, parent_accounts);
+                if (errors.length) {
+                    console.error('There were problems with the received block:');
+                    errors.forEach(console.error);
+                } else {
 
-                // calculate block accounts
-                const accounts = accounting.apply_block_transactions(
-                    block.transactions,
-                    block.author,
-                    parent_accounts);
-                db.store_accounts(block.hash, accounts);
+                    // calculate block accounts
+                    const accounts = accounting.apply_block_transactions(
+                        block.transactions,
+                        block.author,
+                        parent_accounts);
+                    db.store_accounts(block.hash, accounts);
 
-                // store the block
-                db.store_block(block);
+                    // store the block
+                    db.store_block(block);
 
-                const this_is_highest_block = db.get_highest_block().hash === block.hash;
+                    const this_is_highest_block = db.get_highest_block().hash === block.hash;
 
-                if (this_is_highest_block) {
-                    console.log(`${utils.abbreviate(block.hash)} is new highest block`);
+                    if (this_is_highest_block) {
+                        console.log(`${utils.abbreviate(block.hash)} is new highest block`);
 
-                    // remove transactions from the transaction pool that are in this block.
-                    const hashed_block_transactions =
-                        block.transactions.map(transaction => utils.hash(transaction));
-                    transactions = transactions.filter(transaction =>
-                        hashed_block_transactions.filter(new_transaction_hash =>
-                            utils.hash(transaction).equals(new_transaction_hash)).length == 0);
+                        // remove transactions from the transaction pool that are in this block.
+                        const hashed_block_transactions =
+                            block.transactions.map(transaction => utils.hash(transaction));
+                        transactions = transactions.filter(transaction =>
+                            hashed_block_transactions.filter(new_transaction_hash =>
+                                utils.hash(transaction).equals(new_transaction_hash)).length == 0);
 
-                    // and remove invalid transactions for good measure.
-                    transactions = validation.exclude_invalid_transactions(transactions, accounts);
+                        // and remove invalid transactions for good measure.
+                        transactions = validation.exclude_invalid_transactions(transactions, accounts);
 
-                    // the highest block has changed so we need to restart mining
-                    mine();
+                        // the highest block has changed so we need to restart mining
+                        mine();
+                    }
                 }
             }
         }

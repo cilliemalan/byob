@@ -132,8 +132,12 @@ const remove_block_by_hash = (hash) => {
 
     const all_descendents = find_descendents([hash]);
 
-    let removing = db.get('blocks');
-    all_descendents.forEach(hash => removing.unset(hash).write());
+    let blocks = db.get('blocks');
+    let accounts = db.get('accounts');
+    all_descendents.forEach(hash => {
+        blocks.unset(hash).write();
+        accounts.unset(hash).write();
+    });
 }
 
 /**

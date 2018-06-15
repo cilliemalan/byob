@@ -18,54 +18,6 @@ const validate_throw = (wut, validate, message) => {
     }
 }
 
-
-/**
- * Validates that a transaction may be included in a given pool considering given
- * accounts. Returns a new pool of transactions if the transaction can be added
- * or throws otherwise.
- * @param {*} transaction The new transaction.
- * @param {*} pool The old pool of transactions
- * @param {*} accounts The accounts to consider when validating the transaction.
- */
-const add_transaction_to_pool = (transaction, pool, accounts) => {
-    const new_pool = [...pool, transaction];
-    const errors = validate_transactions_deep(new_pool, accounts);
-    if (errors.length) {
-        throw errors.join(". ");
-    }
-
-    return new_pool;
-}
-
-
-/**
- * Creates a transaction split. A split represents the movement of
- * funds from one account to another. fromAmount and toAmound may
- * differ in which case the difference is considered the transaction
- * charge.
- * @param {string} account The account to debit/credit.
- * @param {string} amount The amount. Positive is debit. Negative is credit.
- */
-const create_split = (account, amount) => {
-    const split = { account, amount };
-    validate_throw(split, validate_split);
-    return split;
-};
-
-/**
- * Creates a transaction. A transaction consists of one or more splits.
- * The keys for all the splits with negative (credit) amounts
- * @param {*} splits The splits to include in the transaction.
- * @param {*} signer A function that will sign the transaction
- */
-const create_transaction = (splits, signer) => {
-    if (splits.length < 2) throw "must have at least two splits";
-    const nonce = encode(generate_nonce());
-    const transaction = signer({ splits, nonce });
-    validate_throw(transaction, validate_transaction);
-    return transaction;
-}
-
 /**
  * Initializes a block. The block will be valid but the compliment will be incorrect. In order
  * to accept this block in a blockchain a compliment will need to be chosen that satisfies
@@ -127,9 +79,6 @@ const hash_block = (block) => ({
 });
 
 module.exports = {
-    add_transaction_to_pool,
-    create_split,
-    create_transaction,
     create_block,
     hash_block,
     finalize_block

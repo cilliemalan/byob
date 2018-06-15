@@ -1,5 +1,5 @@
 const objecthash = require('object-hash');
-const { createHash, randomBytes } = require('crypto');
+const { randomBytes } = require('crypto');
 const elliptic = require("elliptic");
 const { isArray } = require('util');
 const _ = require('lodash');

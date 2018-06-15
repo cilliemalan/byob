@@ -2,7 +2,7 @@ const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const { chmodSync } = require('fs');
 
-const { KEYS_FILE, DB_FILE, BLOCK_REWARD } = require('./configuration');
+const { KEYS_FILE, DB_FILE } = require('./configuration');
 const { get_public_key_from_private_key, encode, abbreviate, sign } = require('./utils');
 
 // create/load dbs

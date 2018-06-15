@@ -1,15 +1,5 @@
-const {
-    sign,
-    encode,
-    decode,
-    get_public_key_from_private_key,
-    generate_nonce,
-    hash } = require('./utils');
-const { validate_block, validate_transaction, 
-    validate_split, validate_transactions_deep,
-    validate_block_deep } = require('./validation');
-
-const TARGET = decode(require('./configuration').TARGET);
+const { encode, hash } = require('./utils');
+const { validate_block } = require('./validation');
 
 const validate_throw = (wut, validate, message) => {
     const errors = validate(wut);

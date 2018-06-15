@@ -5,9 +5,7 @@ const blockchain = require('./blockchain');
 const validation = require('./validation');
 const config = require('./configuration');
 const utils = require('./utils');
-const solver = require('./solver');
 const messaging = require('./messaging');
-const accounting = require('./accounting');
 
 const keys = db.get_keys();
 const highest_block = db.get_highest_block();

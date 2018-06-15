@@ -1,5 +1,5 @@
 const { encode, hash,
-    decode, verify, verify_sig,
+    decode, verify,
     abbreviate,
     buffer_less_than } = require('./utils');
 const _ = require('lodash');

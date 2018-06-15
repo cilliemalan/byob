@@ -115,16 +115,6 @@ const solve = async (hash, target = TARGET) => {
     }
 }
 
-/**
- * Updates the hash of the currently running problem. The promise returned by
- * the previous call to solve will only resolve after THIS hash's compliment is
- * found.
- * @param {string|Buffer} new_hash the new hash to find a compliment for
- */
-const update_hash = (new_hash) => {
-    update_problem(new_hash);
-}
-
 module.exports = {
     solve
 }

@@ -307,6 +307,12 @@ async function main() {
     // request highest
     messaging_client.broadcast('request_highest');
 
+    // broadcast our highest
+    const highest = db.get_highest_block();
+    if (highest) {
+        messaging_client.broadcast_highest(highest.height);
+    }
+
     // start mining
     mine().catch(error_exit);
 }

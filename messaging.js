@@ -62,6 +62,10 @@ class MessagingClient extends EventEmitter {
         await this.send(to, 'highest', height);
     }
 
+    async broadcast_highest(height) {
+        await this.broadcast('highest', height);
+    }
+
     async send_chain(to, chain) {
         for (let i = 0; i < chain.length; i++) {
             await this.send(to, 'block', chain[i]);

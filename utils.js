@@ -215,30 +215,6 @@ const calculate_target = (hash_rate, target_time) => {
  */
 const generate_nonce = (length = 32) => randomBytes(length);
 
-// does buffer1 ^ buffer2
-/**
- * Calculates c = a ^ b for buffers.
- * @param {Buffer} a The one buffer.
- * @param {*} b The other buffer.
- * @returns a new buffer containing a ^ b.
- */
-const xor_buffers = (a, b) => {
-    if (typeof a == "string") a = decode(a);
-    if (typeof b == "string") b = decode(b);
-
-    const l = a.length;
-    if (l != b.length) {
-        throw "the two buffers must have the same length";
-    }
-
-    const c = Buffer.alloc(l);
-    for (let i = 0; i < l; ++i) {
-        c[i] = a[i] ^ b[i];
-    }
-
-    return c;
-}
-
 /**
  * Checks that the bytes from one buffer is less than the bytes from another.
  * @param {Buffer|string} a The one buffer. Returns true if this one is smaller or equal.
@@ -274,6 +250,5 @@ module.exports = {
     abbreviate,
     calculate_target,
     generate_nonce,
-    xor_buffers,
     buffer_less_than
 };

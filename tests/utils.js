@@ -4,7 +4,7 @@ const { encode, decode, hash, sign_hash, sign,
     verify_sig, verify,
     generate_key, get_public_key_from_private_key,
     abbreviate, calculate_target, generate_nonce,
-    xor_buffers, buffer_less_than } = require('../utils');
+    buffer_less_than } = require('../utils');
 
 const bequal = (a, b) => equal(a.toString(), b.toString());
 const bnotEqual = (a, b) => notEqual(a.toString(), b.toString());
@@ -64,9 +64,6 @@ module.exports = {
     'generate_nonce generates a nonce that by default is 32 long': () => equal(32, generate_nonce().length),
     'generate_nonce generates a nonce that is the length of the arg': () => equal(5, generate_nonce(5).length),
     'generate_nonce generates unique nonces': () => bnotEqual(generate_nonce(), generate_nonce()),
-
-    'xor_buffers generates an XOR of two buffers': () => equal(encode(xor_buffers(Buffer.from([1, 2, 3]), Buffer.from([5, 6, 7]))), encode(Buffer.from([1 ^ 5, 2 ^ 6, 3 ^ 7]))),
-    'xor_buffers generates an XOR of two buffers if encoded': () => equal(encode(xor_buffers(encode(Buffer.from([1, 2, 3])), encode(Buffer.from([5, 6, 7])))), encode(Buffer.from([1 ^ 5, 2 ^ 6, 3 ^ 7]))),
     
     'buffer_less_than is true if a is less than b': () => ok(buffer_less_than(Buffer.from([1]), Buffer.from([2]))),
     'buffer_less_than is true if a equals b': () => ok(buffer_less_than(Buffer.from([2]), Buffer.from([2]))),

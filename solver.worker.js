@@ -1,4 +1,4 @@
-const { encode, decode, xor_buffers, buffer_less_than } = require('./utils');
+const { encode, decode, buffer_less_than } = require('./utils');
 const { randomBytes, createHash } = require('crypto');
 
 const { stdin, stdout } = process;
@@ -29,6 +29,21 @@ let hashes_done = 0;
 let hrt;
 let hrs;
 
+const compliment = randomBytes(32);
+const inc_compliment = () => {
+    for (let i = 0; i < 32; i++) {
+        var b = compliment[i];
+        if (b == 255) {
+            compliment[i] = 0;
+        } else {
+            compliment[i] = b + 1;
+            break;
+        }
+    }
+
+    return compliment;
+}
+
 // main mining function
 const mine = (iterations = 10000) => {
 
@@ -41,8 +56,9 @@ const mine = (iterations = 10000) => {
     }
 
     for (; iterations; --iterations, ++hashes_done) {
-        const compliment = randomBytes(32);
-        const complemented = xor_buffers(compliment, bhash);
+
+        inc_compliment();
+        const complemented = Buffer.concat([compliment, bhash]);
         const digest = createHash('sha256').update(complemented).digest();
 
         if (buffer_less_than(digest, btarget)) {

@@ -397,8 +397,8 @@ module.exports = {
     'validate_block_deep needs correct signature': () => contains(validate_block_deep(sign({ author: p[1] }, k[0])), "The block signature is not valid"),
     'validate_block_deep passes correct signature': () => notContains(validate_block_deep(sign({ author: p[1] }, k[1])), "The block signature is not valid"),
 
-    'is_block_solution_under_target true if block solution is valid': () => ok(is_block_solution_under_target({ compliment: 'fytXW9IZbMDkIMfZGs1aNWEVt4EXBnsiTwEFBDQx8Cw', hash: 'i7BrIRIbPDAcTai7jFl0Hn6gAVX-sf5POMnXF4-3vak' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
-    'is_block_solution_under_target true if block solution is valid (harder)': () => ok(is_block_solution_under_target({ compliment: 'tgP1O8_oAKAsRWnmiPXBo2JemPgEl0T7c96Bsg_MpDs', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAAAKvMdxGEYc78_cINKza6fD09TT11gWFpfHBo87Rs')),
-    'is_block_solution_under_target true if block solution is valid (easier target but harder solution)': () => ok(is_block_solution_under_target({ compliment: 'tgP1O8_oAKAsRWnmiPXBo2JemPgEl0T7c96Bsg_MpDs', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
+    'is_block_solution_under_target true if block solution is valid': () => ok(is_block_solution_under_target({ compliment: 'tfl28rzPLoo1g4z0PnO3CjA_ZKSlcCjgV48smg0bpxg', hash: 'i7BrIRIbPDAcTai7jFl0Hn6gAVX-sf5POMnXF4-3vak' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
+    'is_block_solution_under_target true if block solution is valid (harder)': () => ok(is_block_solution_under_target({ compliment: '-s3ykZrbyYZzlvMkavSFuaWZa30YkNYfhcFLYUPZWRw', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAAAKvMdxGEYc78_cINKza6fD09TT11gWFpfHBo87Rs')),
+    'is_block_solution_under_target true if block solution is valid (easier target but harder solution)': () => ok(is_block_solution_under_target({ compliment: '-s3ykZrbyYZzlvMkavSFuaWZa30YkNYfhcFLYUPZWRw', hash: 'smd1QlE4cwE3LU-7j39nKqCtN0jmY2xvAv1H2zkzLoE' }, 'AAABrX8pq8r0hXh6ZSDsCNI2mRlBGaXDc4e3GQZhQxA')),
     'is_block_solution_under_target false if block solution is not valid': () => ok(!is_block_solution_under_target({ compliment: 'wBKCxz4HyF9xcEI5tO4_urn7e_Sz27UbV091CxLC2z8', hash: 'i7BrIRIbPDAcTai7jFl0Hn6gAVX-sf5POMnXF4-3vak' }, 'AAAAAG3zf2de9urfWrmiBy1EJo2X34N-Z0iVblxsIRc')),
 }

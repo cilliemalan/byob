@@ -1,6 +1,6 @@
 const { encode, hash,
     decode, verify, verify_sig,
-    abbreviate, xor_buffers,
+    abbreviate,
     buffer_less_than } = require('./utils');
 const _ = require('lodash');
 const { isArray } = _;
@@ -361,7 +361,9 @@ const is_block_solution_under_target = (block, target = TARGET) => {
         return false;
     }
 
-    const complemented = xor_buffers(compliment, hash);
+    const bcompliment = decode(compliment);
+    const bhash = decode(hash);
+    const complemented = Buffer.concat([bcompliment, bhash]);
     const digest = createHash('sha256').update(complemented).digest();
     return buffer_less_than(digest, target);
 }

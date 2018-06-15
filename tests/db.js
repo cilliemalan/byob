@@ -3,7 +3,8 @@ const { isArray, isFunction } = require('util');
 
 const { get_signer, add_key, get_keys,
     get_block_by_hash, get_highest_block, get_leaf_blocks,
-    store_block, store_accounts, get_accounts } = require('../db');
+    store_block, remove_block_by_hash, store_accounts,
+    get_accounts } = require('../db');
 const {
     validate_block,
     is_block_solution_under_target,
@@ -232,4 +233,29 @@ module.exports = {
     'get_accounts will return undefined if nonexistent': () => equal(undefined, get_accounts('def')),
     'get_leaf_blocks contains the highest block': () => equal(1, get_leaf_blocks().filter(x => x.hash == get_highest_block().hash).length),
     'get_leaf_blocks at this point has two blocks': () => equal(2, get_leaf_blocks().length),
+
+    'remove_block_by_hash removes a leaf block': () => {
+        const highest = get_highest_block();
+        const second_highest = get_block_by_hash(highest.parent);
+        ok(highest && second_highest);
+        remove_block_by_hash(highest.hash);
+        const highest_again = get_block_by_hash(highest.hash);
+        const second_highest_again = get_block_by_hash(second_highest.hash);
+        ok(!highest_again);
+        ok(second_highest_again);
+    },
+
+    'remove_block_by_hash removes descendents': () => {
+        const highest = get_highest_block();
+        const second_highest = get_block_by_hash(highest.parent);
+        const third_highest = get_block_by_hash(second_highest.parent);
+        ok(highest && second_highest && third_highest);
+        remove_block_by_hash(second_highest.hash);
+        const highest_again = get_block_by_hash(highest.hash);
+        const second_highest_again = get_block_by_hash(second_highest.hash);
+        const third_highest_again = get_block_by_hash(third_highest.hash);
+        ok(!highest_again);
+        ok(!second_highest_again);
+        ok(third_highest_again);
+    }
 }

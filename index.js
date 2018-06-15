@@ -131,8 +131,7 @@ const receive_block = (block) => {
             if (errors.length) {
                 console.error('There were problems with the received block:');
                 errors.forEach(console.error);
-            }
-            else {
+            } else {
 
                 // calculate block accounts
                 const accounts = accounting.apply_block_transactions(

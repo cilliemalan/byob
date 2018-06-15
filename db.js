@@ -65,6 +65,21 @@ const get_highest_block = () =>
         .value();
 
 /**
+ * Returns all blocks that do not have children.
+ */
+const get_leaf_blocks = () => {
+    const all_parents = db.get('blocks')
+        .map(block => block.parent)
+        .filter(hash => hash)
+        .uniq()
+        .value();
+    const leaf_blocks = db.get('blocks')
+        .filter(block => all_parents.indexOf(block.hash) == -1)
+        .value();
+    return leaf_blocks;
+}
+
+/**
  * Stores a block on the blockchain. The block needs to already have been validated.
  * If the block is the tallest block in the chain it will be considered, henceforth, to
  * be the authoritative block.
@@ -113,6 +128,7 @@ module.exports = {
     get_keys,
     get_block_by_hash,
     get_highest_block,
+    get_leaf_blocks,
     store_block,
     store_accounts,
     get_accounts

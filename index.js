@@ -32,6 +32,47 @@ const generate_keys_if_needed = () => {
     }
 }
 
+const revalidate_blockchain = () => {
+    const reverse_build_chain = (block, chain = []) => {
+        if (block) {
+            const parent = db.get_block_by_hash(block.parent);
+            return reverse_build_chain(parent, [block, ...chain]);
+        } else {
+            return chain;
+        }
+    }
+
+    const validated = {};
+
+    console.log('revalidating blockchain...');
+    const leafs = db.get_leaf_blocks();
+    console.log(`There are ${leafs.length} leaf blocks`);
+    const leaf_chains = db.get_leaf_blocks()
+        .map(b => reverse_build_chain(b));
+
+    leaf_chains.forEach(chain => {
+        chain.forEach(block => {
+            const already_validated = validated[block.hash];
+            const valid = already_validated === undefined ? (() => {
+                const dbblock = db.get_block_by_hash(block.hash);
+                const dbparent = dbblock && dbblock.parent && db.get_block_by_hash(dbblock.parent);
+                const parentaccounts = db.get_accounts(dbparent && dbparent.hash);
+                const errors = validation.validate_block_deep(dbblock, parentaccounts);
+                return errors.length == 0;
+            })() : already_validated;
+            if (!valid) {
+                db.remove_block_by_hash(block.hash);
+                validated[block.hash] = false;
+            } else {
+                validated[block.hash] = true;
+            }
+        });
+    });
+
+    console.log(`validated ${Object.keys(validated).length} blocks and removed ${Object.keys(validated).filter(k => !validated[k]).length} invalid blocks`);
+    console.log(`highest chain is ${db.get_highest_block().height + 1} blocks high`);
+}
+
 const reinitialize_block = () => {
     const highest_block = db.get_highest_block();
     const highest_block_accounts = db.get_accounts(highest_block && highest_block.hash) || {};
@@ -233,6 +274,9 @@ async function main() {
 
     // generate a key pair if the database does not have any.
     generate_keys_if_needed();
+
+    // re-validate the entire blockchain to remove any invalid blocks
+    revalidate_blockchain();
 
     // connect to the message broker
     messaging_client = new messaging.MessagingClient(

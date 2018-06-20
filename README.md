@@ -11,16 +11,11 @@ yarn install
 yarn start
 ```
 
-# Missing stuff
+# Issues
 
-## Blockchain synchronization
-Currently a blockchain is only requested on startup, so in kind-of-likely chance that you
-start your node when nothing else is running, you'll start your own chain and will reject
-any blocks created by other nodes when they start again.
-
-## Proof of Work is completely broken
-I have discovered that the proof of work algorithm that I devised is completely broken.
-Homework assignment: create a PR that fixes it.
+## Security
+The system has not been security tested and probably has a lot of vulnerabilities. Though the blockchain itself will retain its cryptographic integrity, there may be all sorts of other
+vulnerabilities.
 
 ## Database
 The lowdb database probably has its limits. I guess we'll find them...

@@ -1,8 +1,8 @@
 const { deepEqual } = require('assert');
 
-const { apply_block_transactions } = require('../accounting');
+const { apply_block_transactions } = require('../src/accounting');
 
-const { BLOCK_REWARD } = require('../configuration');
+const { BLOCK_REWARD } = require('../src/configuration');
 
 const
     transaction1 = {

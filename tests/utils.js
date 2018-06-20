@@ -3,7 +3,7 @@ const { ok, equal, notEqual, deepEqual, throws } = require('assert');
 const { encode, decode, hash, sign,
     verify, generate_key, get_public_key_from_private_key,
     abbreviate, calculate_target, generate_nonce,
-    buffer_less_than } = require('../utils');
+    buffer_less_than } = require('../src/utils');
 
 const bequal = (a, b) => equal(a.toString(), b.toString());
 const bnotEqual = (a, b) => notEqual(a.toString(), b.toString());

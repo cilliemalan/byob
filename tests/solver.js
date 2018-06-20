@@ -1,7 +1,7 @@
 const { ok } = require('assert');
 
-const { generate_nonce, calculate_target } = require('../utils');
-const { solve } = require('../solver');
+const { generate_nonce, calculate_target } = require('../src/utils');
+const { solve } = require('../src/solver');
 
 
 module.exports = {

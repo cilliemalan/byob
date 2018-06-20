@@ -10,17 +10,17 @@ const hasInvalidTransaction = (a) => contains(a, /The transaction .+, after appl
 
 const { encode, hash, sign,
     generate_key, get_public_key_from_private_key,
-    generate_nonce } = require('../utils');
+    generate_nonce } = require('../src/utils');
 
-const { hash_block } = require('../blockchain');
+const { hash_block } = require('../src/blockchain');
 
-const { solve } = require('../solver');
+const { solve } = require('../src/solver');
 
 const { get_signer, add_key, get_keys,
     get_block_by_hash, get_highest_block,
-    store_block } = require('../db');
+    store_block } = require('../src/db');
 
-const { apply_block_transactions } = require('../accounting');
+const { apply_block_transactions } = require('../src/accounting');
 
 const {
     is_valid_base64,
@@ -32,7 +32,7 @@ const {
     validate_block,
     validate_transactions_deep,
     validate_block_deep,
-    is_block_solution_under_target } = require('../validation');
+    is_block_solution_under_target } = require('../src/validation');
 
 const k = [generate_key(), generate_key(), generate_key()].map(encode);
 const p = k.map(get_public_key_from_private_key).map(encode);

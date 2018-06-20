@@ -4,23 +4,23 @@ const { isArray, isFunction } = require('util');
 const { get_signer, add_key, get_keys,
     get_block_by_hash, get_highest_block, get_leaf_blocks,
     store_block, remove_block_by_hash, store_accounts,
-    get_accounts } = require('../db');
+    get_accounts } = require('../src/db');
 const {
     validate_block,
     is_block_solution_under_target,
-    validate_block_deep } = require('../validation');
+    validate_block_deep } = require('../src/validation');
 const {
     generate_key,
     verify, encode,
     sign,
     get_public_key_from_private_key
-} = require('../utils');
-const { apply_block_transactions } = require('../accounting');
+} = require('../src/utils');
+const { apply_block_transactions } = require('../src/accounting');
 const {
     hash_block
-} = require('../blockchain');
-const { solve } = require('../solver');
-const { BLOCK_REWARD } = require('../configuration');
+} = require('../src/blockchain');
+const { solve } = require('../src/solver');
+const { BLOCK_REWARD } = require('../src/configuration');
 
 
 const k = [

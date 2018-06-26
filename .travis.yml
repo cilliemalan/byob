@@ -1,6 +1,10 @@
 language: node_js
 node_js:
   - "10"
+install:
+  - yarn install
+  - yarn add nyc coveralls
 script:
-  - yarn add nyc
   - nyc -x tests/index.js node tests
+after_success:
+  - nyc report --reporter=text-lcov | yarn coveralls

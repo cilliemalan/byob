@@ -1,0 +1,6 @@
+language: node_js
+node_js:
+  - "10"
+script:
+  - yarn add nyc
+  - nyc -x tests/index.js node tests

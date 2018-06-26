@@ -33,16 +33,6 @@ const create_block = (transactions, height, parent, author) => {
 }
 
 /**
- * Recreates a block using a new set of transactions.
- * @param {*} block The block to replace the transactions of.
- * @param {*} transactions The new set of transactions.
- */
-const recreate_block = (block, transactions) => {
-    const { height, parent, author } = block;
-    return create_block(transactions, height, parent, author);
-}
-
-/**
  * Finalize a block, including the compliment and signature.
  * @param {*} block The block to finalize and sign.
  * @param {*} compliment The complicment to include in the block.

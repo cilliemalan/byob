@@ -1,5 +1,5 @@
 # Build Your Own Blockchain
-[![Travis CI](https://secure.travis-ci.org/cilliemalan/byob.png?branch=master)](https://secure.travis-ci.org/puleos/object-hash?branch=master)
+[![Travis CI](https://secure.travis-ci.org/cilliemalan/byob.png?branch=master)](https://secure.travis-ci.org/cilliemalan/byob.png?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/cilliemalan/byob/badge.svg?branch=master)](https://coveralls.io/github/cilliemalan/byob?branch=master)
 
 A working blockchain example written in node.js.

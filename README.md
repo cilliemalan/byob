@@ -13,7 +13,7 @@ yarn install
 yarn start
 ```
 
-# Issues
+# Limitations
 
 ## Security
 The system has not been security tested and probably has a lot of vulnerabilities. Though the blockchain itself will retain its cryptographic integrity, there may be all sorts of other

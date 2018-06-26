@@ -6,10 +6,15 @@ const { KEYS_FILE, DB_FILE } = require('./configuration');
 const { get_public_key_from_private_key, encode, abbreviate, sign } = require('./utils');
 
 // create/load dbs
+// keys db
 const keys_db = low(new FileSync(KEYS_FILE));
 chmodSync(KEYS_FILE, 0o600);
+
+// blocks db
 const db = low(new FileSync(DB_FILE));
 chmodSync(DB_FILE, 0o600);
+
+// defaults for the dbs
 keys_db.defaults({ keys: {} }).write();
 db.defaults({ blocks: {}, accounts: {} }).write();
 
